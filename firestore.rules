@@ -1,9 +1,51 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Cada pessoa só lê e escreve os próprios treinos.
+    function signedIn() { return request.auth != null; }
+    function isMember(gid) {
+      return signedIn() && request.auth.uid in get(/databases/$(database)/documents/groups/$(gid)).data.members;
+    }
+
+    // Treinos de cada pessoa: só ela lê e escreve.
     match /users/{uid}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Códigos de convite: qualquer pessoa logada pode procurar um código.
+    match /codes/{code} {
+      allow get: if signedIn();
+      allow create: if signedIn() && request.resource.data.owner == request.auth.uid;
+      allow delete: if signedIn() && resource.data.owner == request.auth.uid;
+    }
+
+    // Grupos: só quem participa vê. Cada pessoa só pode se adicionar ou se remover.
+    match /groups/{gid} {
+      allow get: if signedIn() && request.auth.uid in resource.data.members;
+      allow create: if signedIn()
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.members == [request.auth.uid];
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
+        && (request.resource.data.members.toSet() == resource.data.members.toSet().union([request.auth.uid].toSet())
+         || request.resource.data.members.toSet() == resource.data.members.toSet().difference([request.auth.uid].toSet()));
+      allow delete: if signedIn() && resource.data.owner == request.auth.uid;
+
+      // Números de cada pessoa no ranking: todo o grupo vê, cada um escreve o seu.
+      match /members/{uid} {
+        allow read: if isMember(gid);
+        allow create, update: if isMember(gid) && request.auth.uid == uid;
+        allow delete: if signedIn() && request.auth.uid == uid;
+      }
+
+      // Feed: todo o grupo vê; cada um posta e apaga o seu; qualquer membro pode dar 🔥.
+      match /posts/{pid} {
+        allow read: if isMember(gid);
+        allow create: if isMember(gid) && request.resource.data.uid == request.auth.uid;
+        allow update: if isMember(gid) && (
+          resource.data.uid == request.auth.uid
+          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']));
+        allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      }
     }
   }
 }

@@ -49,6 +49,7 @@
   color-scheme:dark}
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 :root{padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0;touch-action:manipulation;-webkit-user-select:none;user-select:none}
@@ -209,6 +210,55 @@ select,input[type=text]{width:100%;font:inherit;font-size:16px;padding:12px 14px
 .stickerbox{border-radius:16px;padding:18px;display:grid;place-items:center}
 .stickerbox img{display:block;max-width:100%;max-height:34vh}
 
+/* Primeiro acesso */
+.goals{display:flex;flex-direction:column;gap:10px}
+.goalc{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:14px 16px;border-radius:14px;background:var(--surface);border:1.5px solid var(--line)}
+.goalc b{font-family:var(--display);font-size:1.35rem}
+.goalc span{font-size:.9rem;color:var(--muted)}
+.goalc.on{border-color:var(--accent);background:var(--accent-soft)}
+.daysel{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.daysel button{min-height:52px;border-radius:12px;background:var(--surface);border:1.5px solid var(--line);font-family:var(--display);font-size:1.5rem;font-weight:700}
+.daysel button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+
+/* Descanso */
+.restbar{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 8px);z-index:30;width:min(560px,calc(100% - 24px));background:var(--fg);color:var(--bg);border-radius:16px;padding:10px 12px 8px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px}
+.restbar .rtop{display:flex;align-items:center;gap:8px}
+.restbar .rl{flex:1;min-width:0;font-weight:600;font-size:.92rem}
+.restbar .rt{font-family:var(--display);font-weight:700;font-size:1.7rem;line-height:1;min-width:3.2ch;text-align:right}
+.restbar button{min-height:36px;padding:0 10px;border-radius:10px;background:color-mix(in srgb,var(--bg) 16%,transparent);color:var(--bg);font-weight:700;font-size:.85rem}
+.restbar .rp{height:5px;border-radius:3px;background:color-mix(in srgb,var(--bg) 20%,transparent);overflow:hidden}
+.restbar .rp i{display:block;height:100%;width:0;background:var(--ok);transition:width .25s linear}
+.restbar.fin{background:var(--ok);color:#fff}
+.restbar.fin .rl{color:#fff}
+.restbar.fin button{background:rgba(255,255,255,.25);color:#fff}
+
+/* Amigos */
+.gchip::before{display:none}
+.ghead{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px}
+.ghead .gh1{flex:1;min-width:0}
+.av2{flex:none;width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:1.3rem}
+.rank .item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid var(--line)}
+.rank .item:first-child{border-top:0}
+.rank .item.me{background:var(--accent-soft)}
+.rank .pos{width:26px;text-align:center;font-family:var(--display);font-weight:700;font-size:1.2rem;color:var(--muted)}
+.rank .main{flex:1;min-width:0}
+.rank .name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank .sub{font-size:.8rem;color:var(--muted)}
+.rank .days{display:flex;flex-direction:column;align-items:flex-end;line-height:1}
+.rank .days b{font-family:var(--display);font-size:1.8rem}
+.rank .days small{font-size:.72rem;color:var(--muted)}
+.post{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.post .phd{display:flex;align-items:center;gap:10px}
+.post .phd .main{flex:1;min-width:0}
+.post .phd .name{font-weight:600}
+.post .phd .sub{font-size:.8rem;color:var(--muted)}
+.post .ptitle{font-family:var(--display);font-weight:700;font-size:1.5rem;line-height:1.05}
+.post .pimg{width:100%;border-radius:12px;max-height:420px;object-fit:cover}
+.post .pstats{font-size:.92rem;color:var(--muted);font-weight:600}
+.post .pact{display:flex;align-items:center;justify-content:space-between}
+.fire{min-height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--line);font-weight:700}
+.fire.on{background:color-mix(in srgb,var(--g-cardio) 18%,var(--surface));border-color:var(--g-cardio)}
+
 /* Tab bar */
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
 .tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
@@ -276,12 +326,13 @@ select,input[type=text]{width:100%;font:inherit;font-size:16px;padding:12px 14px
 <nav class="tabs"><div class="in">
   <button class="tab" data-tab="treino"><svg viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg>Hoje</button>
   <button class="tab" data-tab="plano"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>Plano</button>
-  <button class="tab" data-tab="freq"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8.5 14.5l2 2 4-4"/></svg>Frequência</button>
-  <button class="tab" data-tab="prog"><svg viewBox="0 0 24 24"><path d="M4 19h16M5 15l4.5-4.5 3.5 3 6-6.5M15 7h4v4"/></svg>Progresso</button>
+  <button class="tab" data-tab="evo"><svg viewBox="0 0 24 24"><path d="M4 19h16M5 15l4.5-4.5 3.5 3 6-6.5M15 7h4v4"/></svg>Evolução</button>
+  <button class="tab" data-tab="amigos"><svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="3.2"/><path d="M3 19c.9-3 3.2-4.6 6-4.6s5.1 1.6 6 4.6"/><circle cx="16.5" cy="8" r="2.6"/><path d="M15.5 13.2c2.6-.2 4.6 1.2 5.5 3.8"/></svg>Amigos</button>
   <button class="tab" data-tab="perfil" id="tabPerfil"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20c1.4-3.6 4.2-5.4 7.5-5.4s6.1 1.8 7.5 5.4"/></svg>Perfil</button>
 </div></nav>
 <div id="sheetRoot"></div>
 <div id="toast" class="toast" hidden></div>
+<div id="restBar" class="restbar" hidden></div>
 
 <script>
 /* ================= Grupos e máquinas ================= */
@@ -405,8 +456,8 @@ function setTxt(l){
 }
 
 /* ================= Estado ================= */
-let S={v:1,goal:6,days:{},exercises:[]};
-try{const c=JSON.parse(localStorage.getItem(LS)||'null');if(c&&Array.isArray(c.exercises))S={goal:4,days:{},...c}}catch(e){}
+let S={v:1,goal:4,days:{},exercises:[],onb:false,groups:[]};
+try{const c=JSON.parse(localStorage.getItem(LS)||'null');if(c&&Array.isArray(c.exercises)){S={goal:4,days:{},groups:[],...c};if(S.onb===undefined)S.onb=true}}catch(e){}
 function ensureDefaults(){
   const v=S.v||1;let ch=false;
   if(v<2){
@@ -416,6 +467,7 @@ function ensureDefaults(){
     }
     ch=true;
   }
+  if(S.onb===false&&!Array.isArray(S.workouts)){S.workouts=[];S.schedule={'0':null,'1':null,'2':null,'3':null,'4':null,'5':null,'6':null};ch=true}
   if(v<3||!Array.isArray(S.workouts)){
     S.workouts=DEFAULT_WORKOUTS.map(w=>({id:w.id,t:w.t,items:w.items.map(a=>{
       let e=resolveEx(a[0]);if(!e){e={...CAT[a[0]]};S.exercises.push(e)}
@@ -424,13 +476,15 @@ function ensureDefaults(){
     S.schedule={...DEFAULT_SCHEDULE};ch=true;
   }
   if(!S.schedule){S.schedule={...DEFAULT_SCHEDULE};ch=true}
-  S.v=3;return ch;
+  if(!Array.isArray(S.groups))S.groups=[];
+  S.v=Math.max(3,S.v||3);return ch;
 }
 let DP={};try{DP=JSON.parse(localStorage.getItem(LS+'-dayphotos')||'{}')||{}}catch(e){}
 let PH={};try{PH=JSON.parse(localStorage.getItem(LS+'-photos')||'{}')||{}}catch(e){}
 const now=new Date();
 const ui={tab:'treino',date:today(),group:null,month:new Date(now.getFullYear(),now.getMonth(),1),prog:null,sync:'local',email:'',swap:null,draft:null};
-try{const t=localStorage.getItem(LS+'-tab');if(['treino','plano','freq','prog','perfil'].includes(t))ui.tab=t}catch(e){}
+try{let t=localStorage.getItem(LS+'-tab');if(t==='freq'||t==='prog')t='evo';if(['treino','plano','evo','amigos','perfil'].includes(t))ui.tab=t}catch(e){}
+ui.evo='freq';
 
 /* ================= Armazenamento =================
    Sempre salva neste aparelho (localStorage). Com conta conectada, também salva na nuvem:
@@ -450,10 +504,10 @@ function persistDayPhoto(k){
   else if(!okLocal)toast('A memória do navegador encheu. Entre com sua conta Google pra guardar mais fotos.');
 }
 function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
-const profileBody=()=>({v:S.v,goal:S.goal,nick:S.nick||'',exercises:S.exercises,workouts:S.workouts,schedule:S.schedule});
+const profileBody=()=>({v:S.v,goal:S.goal,nick:S.nick||'',onb:S.onb!==false,bio:S.bio||null,groups:S.groups||[],exercises:S.exercises,workouts:S.workouts,schedule:S.schedule});
 function persistProfile(){saveLocal();if(backend.col)queueWrite('profile',profileBody())}
 function persistDay(k){
-  saveLocal();if(!backend.col)return;
+  saveLocal();scheduleStats();if(!backend.col)return;
   const d=S.days[k];
   if(!d||(!d.checked&&!d.logs.length&&!d.w&&!d.start&&!(d.done&&d.done.length)))return queueWrite('day-'+k,null);
   const body={kind:'day',date:k,checked:!!d.checked,logs:d.logs};if(d.w)body.w=d.w;if(d.done)body.done=d.done;
@@ -496,7 +550,7 @@ async function attach(col,skipCache){
     if(!s.exists||(skipCache&&s.metadata.fromCache)||pending.profile||busy.profile)return;
     const d=JSON.parse(JSON.stringify(s.data()));
     if(Array.isArray(d.exercises))S.exercises=d.exercises;
-    S.goal=d.goal||S.goal;S.v=d.v||1;S.nick=d.nick||'';S.workouts=d.workouts;S.schedule=d.schedule;
+    S.goal=d.goal||S.goal;S.v=d.v||1;S.nick=d.nick||'';S.workouts=d.workouts;S.schedule=d.schedule;S.onb=d.onb!==false;S.bio=d.bio||null;const gOld=JSON.stringify(S.groups||[]);S.groups=Array.isArray(d.groups)?d.groups:[];if(gOld!==JSON.stringify(S.groups)&&fb.uid)loadGroups();
     if(ensureDefaults())persistProfile();else saveLocal();
     render();
   },()=>{}));
@@ -541,11 +595,11 @@ async function connectFirebase(){
   firebase.initializeApp(cfg);
   const fs=firebase.firestore();
   try{await fs.enablePersistence({synchronizeTabs:true})}catch(e){}
-  fb.auth=firebase.auth();fb.ready=true;
+  fb.auth=firebase.auth();fb.fs=fs;fb.ready=true;
   fb.auth.getRedirectResult().catch(e=>toast('Não foi possível entrar com Google ('+e.code+').'));
   fb.auth.onAuthStateChanged(async u=>{
-    if(u){ui.email=u.email||'';ui.name=u.displayName||'';ui.photo=u.photoURL||'';await attach(fs.collection('users').doc(u.uid).collection('data'),false);ui.sync='google'}
-    else{detach();ui.sync='local';ui.email='';ui.name='';ui.photo=''}
+    if(u){fb.uid=u.uid;ui.email=u.email||'';ui.name=u.displayName||'';ui.photo=u.photoURL||'';await attach(fs.collection('users').doc(u.uid).collection('data'),false);ui.sync='google';afterLogin()}
+    else{detach();groupsOff();fb.uid=null;ui.sync='local';ui.email='';ui.name='';ui.photo=''}
     render();
   });
   render();
@@ -807,6 +861,7 @@ function sheetShare(){
     ${canCopyImg()&&window.TREINO_HOSTED?'<button class="primary" data-act="copyImg">Copiar adesivo</button>':''}
     ${canShare?`<button class="${canCopyImg()?'ghost':'primary'}" data-act="shareImg">Compartilhar</button>`:''}
     <button class="ghost" data-act="saveImg">Baixar PNG sem fundo</button>
+    ${fb.uid&&S.groups.length?`<button class="ghost" data-act="gPost" data-k="${s.k}">Postar no feed dos grupos</button>`:''}
     <p class="hint" style="margin:0;text-align:left"><b>Como usar no Stories:</b> toque em <b>Copiar adesivo</b>, abra o Instagram, escolha sua foto do Stories, toque na tela e depois em <b>Colar</b>. Ou baixe o PNG e adicione pelo adesivo de galeria.</p>`);
   s.drawn=true;drawShare();
 }
@@ -836,11 +891,363 @@ async function shareShare(){
   try{await navigator.share({files:[f]})}catch(e){if(e&&e.name!=='AbortError')saveShare()}
 }
 
+/* ================= Primeiro acesso: plano pelo objetivo ================= */
+const GOALS={
+  emagrecer:{n:'Emagrecer',d:'Perder gordura mantendo os músculos',prot:[1.8,2.2]},
+  hipertrofia:{n:'Hipertrofia',d:'Ganhar massa muscular',prot:[1.6,2.2]},
+  forca:{n:'Força',d:'Ficar mais forte nos exercícios principais',prot:[1.6,2.0]}
+};
+// Blocos de treino. m = exercício principal, a = acessório, i = isométrico (segundos)
+const TEMPL={
+  fullA:{t:'Corpo inteiro A',slots:[['agachamento','m'],['supino-reto','m'],['puxada-frontal','m'],['elevacao-pelvica','a'],['desenvolvimento','a'],['prancha','i']]},
+  fullB:{t:'Corpo inteiro B',slots:[['leg-press','m'],['remada-baixa','m'],['supino-inclinado','m'],['mesa-flexora','a'],['elevacao-lateral','a'],['abdominal-maquina','a']]},
+  fullC:{t:'Corpo inteiro C',slots:[['stiff','m'],['puxada-frontal','m'],['desenvolvimento','m'],['bulgaro','a'],['rosca-direta','a'],['triceps-corda','a']]},
+  supA:{t:'Superior A',slots:[['supino-reto','m'],['remada-baixa','m'],['desenvolvimento','m'],['puxada-frontal','a'],['rosca-direta','a'],['triceps-corda','a']]},
+  infA:{t:'Inferior A',slots:[['agachamento','m'],['stiff','m'],['leg-press','a'],['mesa-flexora','a'],['panturrilha-pe','a'],['prancha','i']]},
+  supB:{t:'Superior B',slots:[['puxada-frontal','m'],['supino-inclinado','m'],['remada-unilateral','a'],['elevacao-lateral','a'],['rosca-martelo','a'],['triceps-frances','a']]},
+  infB:{t:'Inferior B',slots:[['leg-press','m'],['elevacao-pelvica','m'],['bulgaro','a'],['extensora','a'],['cadeira-flexora','a'],['abdominal-infra','a']]},
+  push:{t:'Peito + Ombros + Tríceps',slots:[['supino-reto','m'],['desenvolvimento','m'],['supino-inclinado','a'],['elevacao-lateral','a'],['peck-deck','a'],['triceps-corda','a']]},
+  pull:{t:'Costas + Bíceps',slots:[['puxada-frontal','m'],['remada-baixa','m'],['remada-unilateral','a'],['crucifixo-inverso','a'],['rosca-direta','a'],['rosca-martelo','a']]},
+  legs:{t:'Pernas + Glúteos',slots:[['agachamento','m'],['stiff','m'],['leg-press','a'],['elevacao-pelvica','a'],['mesa-flexora','a'],['panturrilha-pe','a']]}
+};
+const SPLITS={2:['fullA','fullB'],3:{ini:['fullA','fullB','fullC'],exp:['supA','infA','fullC']},4:['supA','infA','supB','infB'],5:['supA','infA','push','pull','legs'],6:['push','pull','legs','push','pull','legs']};
+const DAYMAP={2:[1,4],3:[1,3,5],4:[1,2,4,5],5:[1,2,3,5,6],6:[1,2,3,4,5,6]};
+// [séries, reps mín, reps máx, descanso em min]
+const PARAMS={
+  hipertrofia:{m:[3,8,12,2],a:[3,10,15,1.5]},
+  forca:{m:[4,4,6,3],a:[3,6,10,2]},
+  emagrecer:{m:[3,10,12,1.5],a:[3,12,15,1]}
+};
+const bmiOf=(w,h)=>w/((h/100)**2);
+const bmiClass=b=>b<18.5?'abaixo do peso':b<25?'faixa saudável':b<30?'sobrepeso':'obesidade';
+function genPlan(o){
+  const bmi=bmiOf(o.w,o.h),heavy=bmi>=30,P=PARAMS[o.goal];
+  let keys=SPLITS[o.days];if(!Array.isArray(keys))keys=keys[o.level];
+  // IMC alto: troca exercícios de mais impacto por versões com apoio
+  const swap=heavy?{'agachamento':'leg-press','bulgaro':'abdutora'}:{};
+  const ensure=id=>{let e=resolveEx(id);if(!e){e={...CAT[id]};S.exercises.push(e)}return e.id};
+  const made={},workouts=[];
+  for(const key of keys){
+    if(made[key])continue;
+    const T=TEMPL[key];let slots=T.slots.slice();
+    if(o.goal==='forca')slots=slots.slice(0,5);
+    const used=new Set(),items=[];
+    for(let [id,t] of slots){
+      if(swap[id])id=swap[id];
+      if(used.has(id))id=t==='m'?'extensora':'panturrilha-sentado';
+      if(used.has(id))continue;
+      used.add(id);
+      if(t==='i'){items.push({ex:ensure(id),sets:3,rmin:30,rmax:45,rest:1});continue}
+      let [sets,rmin,rmax,rest]=P[t];
+      if(o.level==='ini')sets=Math.max(2,sets-(t==='a'||o.goal==='forca'?1:0));
+      items.push({ex:ensure(id),sets,rmin,rmax,rest});
+    }
+    const cardio=o.goal==='emagrecer'?(bmi>=25?25:20):(o.goal==='hipertrofia'&&bmi>=27?15:0);
+    if(cardio)items.push({ex:ensure(heavy?'bike':'esteira'),mins:cardio});
+    made[key]='p-'+key;workouts.push({id:'p-'+key,t:T.t,items});
+  }
+  const sched={'0':null,'1':null,'2':null,'3':null,'4':null,'5':null,'6':null};
+  DAYMAP[o.days].forEach((d,i)=>{sched[String(d)]=made[keys[i]]});
+  return {workouts,sched};
+}
+function obInit(){
+  const b=S.bio||{};
+  ui.ob={goal:b.goal&&b.goal!=='zero'?b.goal:null,w:b.w||65,h:b.h||165,days:b.days||3,level:b.level||'ini'};
+}
+function readOb(){
+  const o=ui.ob,w=document.getElementById('obW'),h=document.getElementById('obH');
+  if(w)o.w=Math.min(250,Math.max(30,readNum('obW')||o.w));
+  if(h)o.h=Math.min(220,Math.max(120,Math.round(readNum('obH'))||o.h));
+}
+function bmiHint(){
+  const o=ui.ob,b=bmiOf(o.w,o.h),g=GOALS[o.goal];if(!g)return '';
+  let t=`IMC ${fmt(b)} (${bmiClass(b)}) · proteína sugerida: ${Math.round(g.prot[0]*o.w)}–${Math.round(g.prot[1]*o.w)} g por dia.`;
+  if(o.goal==='emagrecer'&&b<20)t+=' Seu IMC já está baixo: vale considerar hipertrofia.';
+  if(b>=30)t+=' Vamos priorizar exercícios com apoio e cardio de baixo impacto.';
+  return t;
+}
+function viewOnboarding(){
+  if(!ui.ob)obInit();
+  const o=ui.ob;
+  return `
+  <div class="section"><div class="eyebrow">victreina</div><h1>${ui.redo?'Novo plano':'Vamos montar seu treino'}</h1>
+    <p class="muted">${ui.redo?'Seus treinos atuais serão trocados pelo plano novo. Seu histórico de cargas e presenças continua salvo.':'Responda rapidinho e o app monta sua semana de treino. Dá pra mudar tudo depois.'}</p></div>
+  ${ui.pendingCode&&ui.sync!=='google'?`<div class="banner"><p><b>Você foi convidada pra um grupo!</b> Monte seu treino e depois entre com Google pra participar.</p></div>`:''}
+  ${!ui.redo&&fb.ready&&ui.sync!=='google'?`<div class="banner"><p><b>Já usa o victreina?</b> Entre com a mesma conta Google pra recuperar seus treinos.</p><button class="gbtn" data-act="signin">${GICON}Entrar com Google</button></div>`:''}
+  <div class="section"><h3>1. Qual é o seu objetivo?</h3>
+    <div class="goals">${Object.keys(GOALS).map(g=>`<button class="goalc ${o.goal===g?'on':''}" data-act="obGoal" data-g="${g}"><b>${GOALS[g].n}</b><span>${GOALS[g].d}</span></button>`).join('')}</div></div>
+  ${o.goal?`
+  <div class="section"><h3>2. Seu corpo</h3><div class="card steppers">${stepper('obW','Peso','em kg',fmt(o.w),1)}${stepper('obH','Altura','em cm',o.h,1)}</div>
+    <p class="hint" id="obBmi" style="margin:0;text-align:left">${bmiHint()}</p></div>
+  <div class="section"><h3>3. Quantos dias por semana na academia?</h3>
+    <div class="daysel">${[2,3,4,5,6].map(n=>`<button class="${o.days===n?'on':''}" data-act="obDays" data-n="${n}">${n}</button>`).join('')}</div></div>
+  <div class="section"><h3>4. Você já treina?</h3>
+    <div class="seg"><button class="${o.level==='ini'?'on':''}" data-act="obLevel" data-l="ini">Estou começando</button><button class="${o.level==='exp'?'on':''}" data-act="obLevel" data-l="exp">Já treino</button></div></div>
+  <button class="primary" data-act="obCreate">Criar meu plano</button>`:''}
+  <div class="section"><button class="ghost" data-act="obZero">Começar do zero, sem plano pronto</button>
+    <p class="hint" style="margin:0">Você monta os seus próprios treinos na aba Plano.</p></div>
+  ${ui.redo?'<button class="ghost" data-act="obCancel">Cancelar e manter meu plano</button>':''}`;
+}
+function obDone(msg){S.onb=true;ui.redo=false;ui.ob=null;ui.tab='plano';persistProfile();render();window.scrollTo(0,0);toast(msg)}
+
+/* ================= Timer de descanso ================= */
+const rest={end:0,total:0,iv:null,ctx:null,done:false};
+function audioOn(){try{rest.ctx=rest.ctx||new (window.AudioContext||window.webkitAudioContext)();if(rest.ctx.state==='suspended')rest.ctx.resume()}catch(e){}}
+function beep(){
+  const c=rest.ctx;if(!c)return;
+  [0,.28,.56].forEach(t=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=880;o.connect(g);g.connect(c.destination);
+    g.gain.setValueAtTime(.0001,c.currentTime+t);g.gain.exponentialRampToValueAtTime(.35,c.currentTime+t+.02);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+t+.2);
+    o.start(c.currentTime+t);o.stop(c.currentTime+t+.22)});
+}
+function startRest(sec){
+  audioOn();rest.total=sec;rest.end=Date.now()+sec*1000;rest.done=false;
+  const bar=document.getElementById('restBar');
+  bar.className='restbar';bar.hidden=false;
+  bar.innerHTML=`<div class="rtop"><span class="rl">Descanso</span><span class="rt num" id="restT"></span><button data-act="restAdd" data-n="-15">−15s</button><button data-act="restAdd" data-n="15">+15s</button><button data-act="restStop">Pular</button></div><span class="rp"><i id="restP"></i></span>`;
+  clearInterval(rest.iv);rest.iv=setInterval(tickRest,250);tickRest();
+}
+function tickRest(){
+  if(!rest.end||rest.done)return;
+  const left=Math.max(0,Math.ceil((rest.end-Date.now())/1000));
+  const t=document.getElementById('restT'),p=document.getElementById('restP');
+  if(t)t.textContent=`${Math.floor(left/60)}:${pad(left%60)}`;
+  if(p)p.style.width=`${Math.max(0,Math.min(100,(1-(rest.end-Date.now())/(rest.total*1000))*100))}%`;
+  if(left<=0){
+    rest.done=true;clearInterval(rest.iv);beep();try{navigator.vibrate&&navigator.vibrate([250,120,250])}catch(e){}
+    const bar=document.getElementById('restBar');bar.className='restbar fin';
+    bar.innerHTML=`<div class="rtop"><span class="rl">Descanso acabou! Bora pra próxima série</span><button data-act="restStop">OK</button></div>`;
+    setTimeout(()=>{if(rest.done)stopRest()},8000);
+  }
+}
+function stopRest(){clearInterval(rest.iv);rest.end=0;rest.done=false;const bar=document.getElementById('restBar');bar.hidden=true;bar.innerHTML=''}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&rest.end&&!rest.done)tickRest()});
+const restSecFor=(exId,k)=>Math.round(((planItemFor(exId,k)||{}).rest||1.5)*60);
+
+/* ================= Grupos: ranking e feed entre amigos ================= */
+const G={list:{},sel:null,members:[],posts:[],unsubs:[],view:'rank'};
+function groupsOff(){G.unsubs.forEach(u=>{try{u()}catch(e){}});G.unsubs=[];G.list={};G.members=[];G.posts=[]}
+function afterLogin(){
+  loadGroups();scheduleStats();
+  if(ui.pendingCode){const c=ui.pendingCode;ui.pendingCode=null;setTimeout(()=>sheetJoin(c),400)}
+}
+async function loadGroups(){
+  if(!fb.fs||!fb.uid)return;
+  for(const gid of [...S.groups]){
+    try{const s=await fb.fs.collection('groups').doc(gid).get();if(s.exists)G.list[gid]={id:gid,...s.data()};else dropGroup(gid)}
+    catch(e){if(e&&e.code==='permission-denied')dropGroup(gid)}
+  }
+  if(!G.sel||!G.list[G.sel])G.sel=S.groups.find(g=>G.list[g])||null;
+  subGroup();rerenderAmigos();
+}
+function dropGroup(gid){S.groups=S.groups.filter(g=>g!==gid);delete G.list[gid];persistProfile()}
+function subGroup(){
+  G.unsubs.forEach(u=>{try{u()}catch(e){}});G.unsubs=[];G.members=[];G.posts=[];
+  const gid=G.sel;if(!gid||!fb.fs)return;
+  const ref=fb.fs.collection('groups').doc(gid);
+  G.unsubs.push(ref.onSnapshot(s=>{if(s.exists){G.list[gid]={id:gid,...s.data()};rerenderAmigos()}},()=>{}));
+  G.unsubs.push(ref.collection('members').onSnapshot(q=>{G.members=q.docs.map(d=>({id:d.id,...d.data()}));rerenderAmigos()},()=>{}));
+  G.unsubs.push(ref.collection('posts').orderBy('createdAt','desc').limit(40).onSnapshot(q=>{G.posts=q.docs.map(d=>({id:d.id,...d.data()}));rerenderAmigos()},()=>{}));
+}
+function rerenderAmigos(){if(ui.tab==='amigos'&&!sheetRoot.innerHTML&&S.onb!==false&&!ui.redo)render()}
+function myStats(){
+  const t=today(),ws=weekStart(t),we=addDays(ws,6),mk=t.slice(0,7);
+  let weekDays=0,weekVol=0,monthDays=0;
+  for(const k of checkedKeys()){if(k>=ws&&k<=we)weekDays++;if(k.startsWith(mk))monthDays++}
+  for(const k in S.days)if(k>=ws&&k<=we)for(const l of S.days[k].logs)if(l.w!=null)weekVol+=l.w*l.r*l.s;
+  let streak=0,w=ws;if(weekCount(w)===0)w=addDays(w,-7);while(weekCount(w)>0){streak++;w=addDays(w,-7)}
+  return {name:displayName()||'Sem nome',photo:ui.photo||'',weekKey:ws,weekDays,weekVol:Math.round(weekVol),monthKey:mk,monthDays,total:checkedKeys().length,streak,updatedAt:Date.now()};
+}
+var statsT=null;
+function scheduleStats(){if(!fb.uid||!S.groups||!S.groups.length)return;clearTimeout(statsT);statsT=setTimeout(pushStats,2500)}
+async function pushStats(){
+  if(!fb.uid)return;const st=myStats();
+  for(const gid of S.groups){try{await fb.fs.collection('groups').doc(gid).collection('members').doc(fb.uid).set(st)}catch(e){}}
+}
+const newCode=()=>Array.from({length:6},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
+async function addGroup(gid){
+  if(!S.groups.includes(gid))S.groups.push(gid);
+  persistProfile();G.sel=gid;G.view='rank';
+  await pushStats();await loadGroups();ui.tab='amigos';render();
+}
+async function createGroup(name){
+  const fs=fb.fs,uid=fb.uid,ref=fs.collection('groups').doc();
+  let code=newCode();
+  for(let i=0;i<3;i++){const ex=await fs.collection('codes').doc(code).get().catch(()=>null);if(!ex||!ex.exists)break;code=newCode()}
+  await ref.set({name,code,owner:uid,members:[uid],createdAt:Date.now()});
+  await fs.collection('codes').doc(code).set({gid:ref.id,name,owner:uid});
+  await addGroup(ref.id);
+}
+async function joinGroup(code){
+  const c=code.trim().toUpperCase();
+  const s=await fb.fs.collection('codes').doc(c).get();
+  if(!s.exists){toast('Não achei esse código. Confira as letras e tente de novo.');return false}
+  const {gid,name}=s.data();
+  if(!S.groups.includes(gid))await fb.fs.collection('groups').doc(gid).update({members:firebase.firestore.FieldValue.arrayUnion(fb.uid)});
+  await addGroup(gid);toast(`Você entrou no grupo ${name}!`);return true;
+}
+async function leaveGroup(gid){
+  const ref=fb.fs.collection('groups').doc(gid);
+  try{await ref.collection('members').doc(fb.uid).delete()}catch(e){}
+  await ref.update({members:firebase.firestore.FieldValue.arrayRemove(fb.uid)});
+  S.groups=S.groups.filter(g=>g!==gid);delete G.list[gid];persistProfile();
+  G.sel=S.groups.find(g=>G.list[g])||null;subGroup();render();
+}
+async function deleteGroup(gid){
+  const g=G.list[gid];
+  await fb.fs.collection('groups').doc(gid).delete();
+  if(g&&g.code)try{await fb.fs.collection('codes').doc(g.code).delete()}catch(e){}
+  S.groups=S.groups.filter(x=>x!==gid);delete G.list[gid];persistProfile();
+  G.sel=S.groups.find(x=>G.list[x])||null;subGroup();render();
+}
+async function smallPhoto(src){
+  const img=await new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=err;i.src=src});
+  const sc=Math.min(1,640/Math.max(img.naturalWidth,img.naturalHeight));
+  const c=document.createElement('canvas');c.width=Math.round(img.naturalWidth*sc);c.height=Math.round(img.naturalHeight*sc);
+  c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c.toDataURL('image/jpeg',0.7);
+}
+async function postToGroups(k){
+  if(!fb.uid||!S.groups.length){toast('Entre num grupo na aba Amigos pra postar no feed.');return}
+  const d=sessionData(k),img=DP[k]?await smallPhoto(DP[k]):'';
+  const post={uid:fb.uid,name:displayName()||'Sem nome',photo:ui.photo||'',date:k,title:d.title,groups:d.groups,dur:d.dur||0,volume:Math.round(d.volume),nEx:d.rows.length,img,createdAt:Date.now()};
+  let ok=0;
+  for(const gid of S.groups){try{await fb.fs.collection('groups').doc(gid).collection('posts').doc(fb.uid+'_'+k).set(post,{merge:true});ok++}catch(e){}}
+  toast(ok?'Treino postado no feed!':'Não deu pra postar agora. Tente de novo.');
+}
+function avHtml(photo,name,cls){
+  return photo?`<img class="${cls}" src="${esc(photo)}" alt="" referrerpolicy="no-referrer">`:`<span class="${cls}">${esc((name||'?').trim()[0]||'?').toUpperCase()}</span>`;
+}
+function whenTxt(k){const t=today();return k===t?'hoje':k===addDays(t,-1)?'ontem':ddmm(k)}
+function viewAmigos(){
+  const head=`<div class="section"><div class="eyebrow">Amigos</div><h1>Treinar junto</h1></div>`;
+  if(ui.sync!=='google')return head+`<div class="empty">Crie um grupo com suas amigas, veja o ranking da semana e os treinos de todo mundo no feed.</div>${fb.ready?`<button class="gbtn" data-act="signin">${GICON}Entrar com Google pra começar</button>`:''}`;
+  if(!S.groups.length)return head+`<div class="empty">Você ainda não está em nenhum grupo. Crie um e mande o convite pras amigas, ou entre com o código que alguém te mandou.</div>
+    <button class="primary" data-act="gNew">Criar um grupo</button><button class="ghost" data-act="gJoin">Entrar com código de convite</button>`;
+  const ids=S.groups.filter(g=>G.list[g]);
+  if(!ids.length)return head+`<div class="empty">Carregando seus grupos…</div>`;
+  const g=G.list[G.sel]||G.list[ids[0]],ws=weekStart(today()),me=fb.uid;
+  const chips=`<div class="chips">${ids.map(id=>`<button class="chip gchip ${id===g.id?'on':''}" data-act="gSel" data-id="${id}">${esc(G.list[id].name)}</button>`).join('')}<button class="chip gchip" data-act="gMore" aria-label="Criar ou entrar em outro grupo">+ Grupo</button></div>`;
+  const n=(g.members||[]).length;
+  const top=`<div class="ghead"><div class="gh1"><h2>${esc(g.name)}</h2><div class="muted" style="font-size:.88rem">${n} ${n===1?'pessoa':'pessoas'} · código <b class="num">${esc(g.code)}</b></div></div><button class="sm solid" data-act="gInvite">Convidar</button></div>`;
+  const seg=`<div class="seg"><button class="${G.view==='rank'?'on':''}" data-act="gView" data-v="rank">Ranking da semana</button><button class="${G.view==='feed'?'on':''}" data-act="gView" data-v="feed">Feed</button></div>`;
+  let body='';
+  if(G.view==='rank'){
+    const rows=G.members.map(m=>({...m,d:m.weekKey===ws?m.weekDays:0,v:m.weekKey===ws?m.weekVol:0})).sort((a,b)=>b.d-a.d||b.v-a.v||(b.streak||0)-(a.streak||0));
+    const medal=['🥇','🥈','🥉'];
+    body=rows.length?`<div class="list rank">${rows.map((m,i)=>`<div class="item ${m.id===me?'me':''}"><span class="pos">${m.d&&i<3?medal[i]:i+1}</span>${avHtml(m.photo,m.name,'av2')}<div class="main"><div class="name">${esc(m.name)}${m.id===me?' <span class="muted">(você)</span>':''}</div><div class="sub num">${m.v?`${Math.round(m.v).toLocaleString('pt-BR')} kg na semana · `:''}${m.streak?`${m.streak} ${m.streak===1?'semana seguida':'semanas seguidas'}`:'começando agora'}</div></div><span class="days num"><b>${m.d}</b><small>${m.d===1?'dia':'dias'}</small></span></div>`).join('')}</div>
+      <p class="hint" style="margin:0">Conta os dias com presença marcada desta semana (domingo a sábado). Empate: quem levantou mais peso.</p>`
+      :`<div class="empty">O ranking aparece quando as pessoas do grupo abrirem o app.</div>`;
+  }else{
+    body=G.posts.length?G.posts.map(p=>{
+      const likes=p.likes||[],liked=likes.includes(me);
+      const stats=[p.dur?`${p.dur} min`:'',p.volume?`${p.volume.toLocaleString('pt-BR')} kg`:'',p.nEx?`${p.nEx} ${p.nEx===1?'exercício':'exercícios'}`:''].filter(Boolean).join(' · ');
+      return `<article class="post"><div class="phd">${avHtml(p.photo,p.name,'av2')}<div class="main"><div class="name">${esc(p.name)}</div><div class="sub">${esc(whenTxt(p.date))}</div></div></div>
+        <div class="ptitle">${esc(p.title)}</div>${(p.groups||[]).length?pills(p.groups):''}
+        ${p.img?`<img class="pimg" src="${p.img}" alt="Foto do treino de ${esc(p.name)}" loading="lazy">`:''}
+        ${stats?`<div class="pstats num">${stats}</div>`:''}
+        <div class="pact"><button class="fire ${liked?'on':''}" data-act="gLike" data-id="${p.id}" aria-pressed="${liked}">🔥 ${likes.length||''}</button>${p.uid===me?`<button class="link" data-act="gDelPost" data-id="${p.id}">Apagar</button>`:''}</div></article>`;
+    }).join(''):`<div class="empty">Ninguém postou ainda. No fim do treino, toque em <b>Postar no feed dos grupos</b>.</div>`;
+  }
+  const foot=g.owner===me?`<button class="ghost danger" data-act="gDelete">Apagar este grupo</button>`:`<button class="ghost danger" data-act="gLeave">Sair deste grupo</button>`;
+  return head+chips+top+seg+body+foot;
+}
+function sheetJoin(code){
+  if(ui.sync!=='google'){toast('Entre com Google pra participar de grupos.');ui.tab='amigos';render();return}
+  openSheet(`
+    <div class="sheethead"><div><h2>Entrar num grupo</h2></div>${closeBtn()}</div>
+    <div class="field"><label for="gCode">Código de convite</label><input type="text" id="gCode" value="${esc(code||'')}" placeholder="Ex.: K7M2QX" autocomplete="off" autocapitalize="characters" maxlength="6" style="text-transform:uppercase;letter-spacing:.2em;font-weight:700"></div>
+    <button class="primary" data-act="gJoinGo">Entrar no grupo</button>`);
+}
+function sheetNewGroup(){
+  openSheet(`
+    <div class="sheethead"><div><h2>Criar grupo</h2></div>${closeBtn()}</div>
+    <div class="field"><label for="gName">Nome do grupo</label><input type="text" id="gName" placeholder="Ex.: Meninas da academia" autocomplete="off" maxlength="40"></div>
+    <button class="primary" data-act="gCreateGo">Criar grupo</button>
+    <p class="hint" style="margin:0">Depois é só tocar em Convidar e mandar o link pras amigas.</p>`);
+  setTimeout(()=>{const i=document.getElementById('gName');i&&i.focus()},60);
+}
+async function shareInvite(){
+  const g=G.list[G.sel];if(!g)return;
+  const url=location.origin+location.pathname+'?convite='+g.code;
+  const text=`Bora treinar comigo no victreina! Entra no grupo "${g.name}" com o código ${g.code}: ${url}`;
+  try{if(navigator.share){await navigator.share({text});return}}catch(e){if(e&&e.name==='AbortError')return}
+  try{await navigator.clipboard.writeText(text);toast('Convite copiado! Cole no WhatsApp.')}catch(e){toast(`Código do grupo: ${g.code}`)}
+}
+
+/* ================= Evolução: frequência + cargas ================= */
+function viewEvo(){
+  return `<div class="seg"><button class="${ui.evo==='freq'?'on':''}" data-act="evoTab" data-v="freq">Frequência</button><button class="${ui.evo==='cargas'?'on':''}" data-act="evoTab" data-v="cargas">Cargas</button></div>`+(ui.evo==='freq'?viewFreq():viewProg());
+}
+
+/* Convite por link: ?convite=CODIGO */
+try{const c=new URLSearchParams(location.search).get('convite');if(c){ui.pendingCode=c.toUpperCase().slice(0,6);history.replaceState(null,'',location.pathname)}}catch(e){}
+
+/* Ações novas (primeiro acesso, descanso, grupos) */
+document.addEventListener('click',async ev=>{
+  const b=ev.target.closest('[data-act]');if(!b)return;
+  const a=b.dataset.act;
+  try{
+  switch(a){
+    case 'step':if((b.dataset.t||'').startsWith('ob'))setTimeout(()=>{readOb();const h=document.getElementById('obBmi');if(h)h.textContent=bmiHint()},0);return;
+    case 'redoPlan':ui.redo=true;obInit();render();window.scrollTo(0,0);return;
+    case 'obCancel':ui.redo=false;ui.ob=null;render();return;
+    case 'obGoal':readOb();ui.ob.goal=b.dataset.g;render();return;
+    case 'obDays':readOb();ui.ob.days=+b.dataset.n;render();return;
+    case 'obLevel':readOb();ui.ob.level=b.dataset.l;render();return;
+    case 'obCreate':{
+      readOb();const o=ui.ob,plan=genPlan(o);
+      S.workouts=plan.workouts;S.schedule=plan.sched;S.goal=o.days;S.bio={w:o.w,h:o.h,goal:o.goal,days:o.days,level:o.level};
+      obDone(`Plano de ${GOALS[o.goal].n.toLowerCase()} criado!`);return;
+    }
+    case 'obZero':
+      if(ui.redo&&!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Toque de novo: isso apaga seus treinos atuais';return}
+      readOb();S.workouts=[];S.schedule={'0':null,'1':null,'2':null,'3':null,'4':null,'5':null,'6':null};S.bio={...(S.bio||{}),w:ui.ob.w,h:ui.ob.h,goal:'zero'};
+      obDone('Pronto! Crie seu primeiro treino em "+ Criar treino".');return;
+    case 'restGo':startRest(+b.dataset.s||90);return;
+    case 'restAdd':rest.end+=(+b.dataset.n)*1000;rest.total=Math.max(rest.total+(+b.dataset.n),5);tickRest();return;
+    case 'restStop':stopRest();return;
+    case 'evoTab':ui.evo=b.dataset.v;render();return;
+    case 'gSel':G.sel=b.dataset.id;subGroup();render();return;
+    case 'gView':G.view=b.dataset.v;render();return;
+    case 'gNew':return sheetNewGroup();
+    case 'gJoin':return sheetJoin('');
+    case 'gMore':openSheet(`<div class="sheethead"><div><h2>Grupos</h2></div>${closeBtn()}</div><button class="primary" data-act="gNew">Criar um grupo novo</button><button class="ghost" data-act="gJoin">Entrar com código de convite</button>`);return;
+    case 'gInvite':return shareInvite();
+    case 'gCreateGo':{
+      const name=document.getElementById('gName').value.trim();if(!name){toast('Dê um nome pro grupo');return}
+      b.disabled=true;b.textContent='Criando…';await createGroup(name.slice(0,40));closeSheet();ui.tab='amigos';render();toast('Grupo criado! Agora convide as amigas.');return;
+    }
+    case 'gJoinGo':{
+      const code=document.getElementById('gCode').value;if(code.trim().length<6){toast('O código tem 6 letras e números');return}
+      b.disabled=true;b.textContent='Entrando…';const ok=await joinGroup(code);if(ok)closeSheet();else{b.disabled=false;b.textContent='Entrar no grupo'}return;
+    }
+    case 'gLike':{
+      const p=G.posts.find(x=>x.id===b.dataset.id);if(!p)return;const liked=(p.likes||[]).includes(fb.uid),FV=firebase.firestore.FieldValue;
+      await fb.fs.collection('groups').doc(G.sel).collection('posts').doc(p.id).update({likes:liked?FV.arrayRemove(fb.uid):FV.arrayUnion(fb.uid)});return;
+    }
+    case 'gDelPost':
+      if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Toque de novo pra apagar';return}
+      await fb.fs.collection('groups').doc(G.sel).collection('posts').doc(b.dataset.id).delete();toast('Post apagado');return;
+    case 'gLeave':
+      if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Toque de novo pra sair do grupo';return}
+      await leaveGroup(G.sel);toast('Você saiu do grupo');return;
+    case 'gDelete':
+      if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Toque de novo: apaga o grupo pra todo mundo';return}
+      await deleteGroup(G.sel);toast('Grupo apagado');return;
+    case 'gPost':b.disabled=true;b.textContent='Postando…';await postToGroups(b.dataset.k);b.textContent='Postado no feed ✓';return;
+  }
+  }catch(e){toast('Algo deu errado. Confira sua internet e tente de novo.');console.error(e)}
+});
+document.addEventListener('change',ev=>{if(ev.target.id==='obW'||ev.target.id==='obH'){readOb();const h=document.getElementById('obBmi');if(h)h.textContent=bmiHint()}});
+
+
 /* ================= Telas ================= */
 const app=document.getElementById('app');
 function render(){
+  const onb=S.onb===false||ui.redo;
+  document.querySelector('.tabs').hidden=onb;
+  if(onb){app.innerHTML=viewOnboarding();return}
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===ui.tab));
-  app.innerHTML=ui.tab==='treino'?viewHoje():ui.tab==='plano'?viewPlano():ui.tab==='freq'?viewFreq():ui.tab==='perfil'?viewPerfil():viewProg();
+  app.innerHTML=ui.tab==='treino'?viewHoje():ui.tab==='plano'?viewPlano():ui.tab==='evo'?viewEvo():ui.tab==='amigos'?viewAmigos():viewPerfil();
   tabAvatar();
 }
 const GICON='<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
@@ -943,7 +1350,9 @@ function viewPlano(){
   }).join('');
   const wl=S.workouts.map(w=>`<button class="row" data-act="openW" data-id="${w.id}"><div class="main" style="display:flex;flex-direction:column;gap:5px"><div class="name">${esc(w.t)}</div>${pills(wGroups(w))}<div class="sub num">${w.items.length} ${w.items.length===1?'exercício':'exercícios'}${w.items.length?` · cerca de ${planMinutes(w)} min`:''}</div></div><span class="chev">›</span></button>`).join('');
   return `
-  <div class="section"><div class="eyebrow">Plano</div><h1>Meu treino</h1></div>
+  <div class="section"><div class="eyebrow">Plano</div><h1>Meu treino</h1>
+    ${S.bio&&S.bio.goal&&S.bio.goal!=='zero'?`<p class="muted">Montado para <b>${GOALS[S.bio.goal].n.toLowerCase()}</b> · ${S.bio.days} dias por semana · ${S.bio.level==='ini'?'iniciante':'já treina'}</p>`:''}
+    <button class="link" data-act="redoPlan" style="align-self:flex-start">Montar um plano novo pra mim</button></div>
   <div class="section"><h3>Semana</h3><div class="list">${week}</div><p class="hint" style="margin:0">Toque num dia para escolher o treino dele.</p></div>
   <div class="section"><h3>Treinos</h3><div class="list">${wl}<button class="row addrow" data-act="newW">+ Criar treino</button></div><p class="hint" style="margin:0">Toque num treino para trocar, adicionar ou tirar máquinas.</p></div>
   ${acct()}`;
@@ -1074,6 +1483,7 @@ function viewPerfil(){
     ${avatarHtml('avatar')}
     <h1>${name?esc(name):'Seu perfil'}</h1>
     ${ui.email?`<div class="since">${esc(ui.email)}</div>`:''}
+    ${S.bio&&S.bio.w&&S.bio.h?`<div class="since num">${fmt(S.bio.w)} kg · ${S.bio.h} cm · IMC ${fmt(bmiOf(S.bio.w,S.bio.h))}${S.bio.goal&&GOALS[S.bio.goal]?` · proteína ${Math.round(GOALS[S.bio.goal].prot[0]*S.bio.w)}–${Math.round(GOALS[S.bio.goal].prot[1]*S.bio.w)} g/dia`:''}</div>`:''}
     <div class="since">${since?`No victreina desde ${esc(since)}`:'Seu primeiro treino vai aparecer aqui'}</div>
     <button class="link" data-act="nick">${S.nick?'Mudar como quero ser chamada':'Escolher como quero ser chamada'}</button>
   </div>
@@ -1164,6 +1574,7 @@ function sheetLog(exId,wid,idx){
     ${tip?`<div class="tip">${tip}</div>`:''}
     <div class="steppers">${steppers}</div>
     <button class="primary" data-act="save" data-id="${exId}">Salvar</button>
+    ${kind!=='tempo'?`<button class="ghost" data-act="restGo" data-s="${restSecFor(exId,k)}">Descansar entre séries (${restTxt(restSecFor(exId,k)/60)})</button>`:''}
     ${todayLogs.length?`<div><h3 style="margin-bottom:4px">Registrado ${k===today()?'hoje':'neste dia'}</h3><div class="entries">${todayLogs.map(l=>`<div class="item"><span class="num">${setTxt(l)}</span><button class="del" data-act="delLog" data-id="${l.id}" data-ex="${exId}" aria-label="Apagar registro">✕</button></div>`).join('')}</div></div>`:''}
     ${wid?`<button class="ghost" data-act="editItem" data-w="${wid}" data-i="${idx}" data-ret="close">Trocar máquina ou séries neste treino</button>`:''}
     <button class="ghost" data-act="editEx" data-id="${exId}">Renomear ou excluir máquina</button>`,gc(e.group));
@@ -1309,6 +1720,7 @@ document.addEventListener('click',ev=>{
     const prevBest=bestOf(ex);
     const d=dayOf(ui.date);d.logs.push(log);d.checked=true;if(d.done&&!d.done.includes(ex))d.done.push(ex);autoStart(ui.date);
     persistDay(ui.date);closeSheet();render();
+    if(log.min==null)startRest(restSecFor(ex,ui.date));
     toast(log.w!=null&&prevBest>0&&log.w>prevBest?`Novo recorde: ${fmt(log.w)} kg!`:`Salvo: ${setTxt(log)}`);
     return;
   }
