@@ -646,7 +646,7 @@ async function drawCard(data,style){
   const prs=data.rows.filter(r=>r.pr).length;
   const stats=[[data.dur?String(data.dur):'—',data.dur?'min':'','TEMPO'],[data.volume?Math.round(data.volume).toLocaleString('pt-BR'):'—',data.volume?'kg':'','VOLUME'],[String(data.rows.length),'','EXERCÍCIOS']];
   const vs=104,top=card?80:40;
-  const H=top+34+34+tl.length*ts*.9+18+40+(data.groups.length?30+44:0)+64+30+12+vs+(prs?40+56:0)+(card?80:40);
+  const H=top+34+34+tl.length*ts*.9+18+40+(data.groups.length?30+44:0)+64+30+12+vs+56+34+22+56+(prs?40+56:0)+(card?80:40);
   const c=document.createElement('canvas');c.width=W;c.height=Math.ceil(H);const x=c.getContext('2d');
   if(card){
     rr(x,0,0,W,c.height,64);x.fillStyle='#14171c';x.fill();
@@ -686,6 +686,20 @@ async function drawCard(data,style){
     x.textAlign='center';
   });
   y+=12+vs;
+  // frequência da semana
+  y+=56;x.font=`600 30px ${B}`;x.fillStyle=mu;
+  x.fillText(`${data.weekCount} de ${S.goal} ${S.goal===1?'dia':'dias'} na academia esta semana`,W/2,y);
+  y+=22;
+  const r0=28,gapD=26,tot=7*2*r0+6*gapD,letters=['D','S','T','Q','Q','S','S'],todayIdx=parseKey(data.k).getDay();
+  letters.forEach((l,i)=>{
+    const cx=W/2-tot/2+r0+i*(2*r0+gapD),cy=y+r0,on=data.week[i];
+    x.beginPath();x.arc(cx,cy,r0,0,7);
+    if(on){x.fillStyle=fg;x.fill()}
+    else{x.save();x.shadowColor='transparent';x.lineWidth=3;x.strokeStyle=mu;x.globalAlpha=.6;x.stroke();x.restore()}
+    if(i===todayIdx){x.save();x.shadowColor='transparent';x.beginPath();x.arc(cx,cy,r0+7,0,7);x.lineWidth=3;x.strokeStyle=fg;x.stroke();x.restore()}
+    x.font=`700 26px ${B}`;x.fillStyle=on?(dark?'#ffffff':'#14171c'):mu;x.fillText(l,cx,cy+9);
+  });
+  y+=2*r0;
   if(prs){
     y+=40;x.save();x.shadowColor='transparent';x.font=`700 30px ${B}`;
     const t=`${prs} ${prs===1?'RECORDE':'RECORDES'} DE CARGA`,tw=x.measureText(t).width+56;
