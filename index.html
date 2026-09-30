@@ -112,7 +112,8 @@ p{margin:0}
 
 .cal{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px}
 .calhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
-.calhead h2{text-transform:capitalize;text-align:center}
+.calhead h2{text-align:center}
+.calhead h2::first-letter{text-transform:uppercase}
 .grid7{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
 .wd{text-align:center;font-size:.75rem;font-weight:600;color:var(--muted);padding:4px 0}
 .day{aspect-ratio:1;max-width:100%;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-weight:500;font-variant-numeric:tabular-nums}
@@ -190,6 +191,21 @@ select,input[type=text]{width:100%;font:inherit;font-size:16px;padding:12px 14px
 .timer .sm{min-height:44px}
 .sm.solid{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .seg3{grid-template-columns:repeat(3,1fr)}
+.seg4{grid-template-columns:repeat(4,1fr)}
+.seg4 button{font-size:.85rem}
+.dayphoto{position:relative;border-radius:16px;overflow:hidden;background:var(--surface);border:1px solid var(--line)}
+.dayphoto img{display:block;width:100%;aspect-ratio:2/1;object-fit:cover}
+.dayphoto .bar2{position:absolute;left:0;right:0;bottom:0;display:flex;gap:8px;justify-content:flex-end;padding:10px;background:linear-gradient(transparent,rgba(0,0,0,.55))}
+.dayphoto .bar2 button{min-height:38px;padding:0 14px;border-radius:10px;background:rgba(255,255,255,.92);color:#14171c;font-weight:600;font-size:.88rem}
+.addphoto{width:100%;min-height:64px;border-radius:14px;border:2px dashed var(--line);display:flex;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-weight:600}
+.addphoto svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.day.ph{background-size:cover;background-position:center;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);font-weight:700}
+.day.ph .dots{display:none}
+.gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.gallery button{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:4/5;background:var(--line)}
+.gallery img{width:100%;height:100%;object-fit:cover;display:block}
+.gallery span{position:absolute;left:6px;bottom:6px;font-size:.75rem;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+.viewer img{display:block;width:100%;border-radius:14px;max-height:60vh;object-fit:contain;background:#000}
 .stickerbox{border-radius:16px;padding:18px;display:grid;place-items:center}
 .stickerbox img{display:block;max-width:100%;max-height:34vh}
 
@@ -410,6 +426,7 @@ function ensureDefaults(){
   if(!S.schedule){S.schedule={...DEFAULT_SCHEDULE};ch=true}
   S.v=3;return ch;
 }
+let DP={};try{DP=JSON.parse(localStorage.getItem(LS+'-dayphotos')||'{}')||{}}catch(e){}
 let PH={};try{PH=JSON.parse(localStorage.getItem(LS+'-photos')||'{}')||{}}catch(e){}
 const now=new Date();
 const ui={tab:'treino',date:today(),group:null,month:new Date(now.getFullYear(),now.getMonth(),1),prog:null,sync:'local',email:'',swap:null,draft:null};
@@ -425,6 +442,12 @@ function savePhotosLocal(){try{localStorage.setItem(LS+'-photos',JSON.stringify(
 function persistPhoto(ex){
   if(!savePhotosLocal()&&!backend.col)toast('A memória do navegador encheu. Entre com sua conta para guardar mais fotos.');
   if(backend.col)queueWrite('photo-'+ex,PH[ex]?{kind:'photo',ex,data:PH[ex]}:null);
+}
+function saveDPLocal(){try{localStorage.setItem(LS+'-dayphotos',JSON.stringify(DP));return true}catch(e){return false}}
+function persistDayPhoto(k){
+  const okLocal=saveDPLocal();
+  if(backend.col)queueWrite('dayphoto-'+k,DP[k]?{kind:'dayphoto',date:k,data:DP[k]}:null);
+  else if(!okLocal)toast('A memória do navegador encheu. Entre com sua conta Google pra guardar mais fotos.');
 }
 function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
 const profileBody=()=>({v:S.v,goal:S.goal,nick:S.nick||'',exercises:S.exercises,workouts:S.workouts,schedule:S.schedule});
@@ -463,6 +486,7 @@ async function attach(col,skipCache){
       await col.doc('profile').set(profileBody());
       for(const k of Object.keys(S.days))persistDay(k);
       for(const ex of Object.keys(PH))persistPhoto(ex);
+      for(const k of Object.keys(DP))persistDayPhoto(k);
     }
   }catch(e){
     if(skipCache)return false;
@@ -475,6 +499,12 @@ async function attach(col,skipCache){
     S.goal=d.goal||S.goal;S.v=d.v||1;S.nick=d.nick||'';S.workouts=d.workouts;S.schedule=d.schedule;
     if(ensureDefaults())persistProfile();else saveLocal();
     render();
+  },()=>{}));
+  backend.unsubs.push(col.where('kind','==','dayphoto').onSnapshot(q=>{
+    if(skipCache&&q.metadata.fromCache)return;
+    const dp={};for(const doc of q.docs){const d=doc.data();if(d.date&&d.data)dp[d.date]=d.data}
+    for(const k of Object.keys(DP)){const id='dayphoto-'+k;if(pending[id]||busy[id])dp[k]=DP[k]}
+    DP=dp;saveDPLocal();if(!sheetRoot.innerHTML)render();
   },()=>{}));
   backend.unsubs.push(col.where('kind','==','photo').onSnapshot(q=>{
     if(skipCache&&q.metadata.fromCache)return;
@@ -585,6 +615,41 @@ function durMin(d){
   const ts=(d.logs||[]).map(l=>l.t).filter(Boolean);
   return ts.length>1?Math.round((Math.max(...ts)-Math.min(...ts))/60000)+5:null;
 }
+const CAM='<svg viewBox="0 0 24 24"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13.5" r="3.6"/></svg>';
+function dayPhotoBlock(k){
+  if(DP[k])return `<div class="dayphoto"><img src="${DP[k]}" alt="Foto do dia"><div class="bar2"><button data-act="dpPick" data-k="${k}">Trocar</button><button data-act="dpView" data-k="${k}">Ver</button></div></div>`;
+  return `<button class="addphoto" data-act="dpPick" data-k="${k}">${CAM}Postar foto do dia</button>`;
+}
+async function shrinkDayPhoto(file){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=err;i.src=url});
+    const sc=Math.min(1,1080/Math.max(img.naturalWidth,img.naturalHeight));
+    const c=document.createElement('canvas');c.width=Math.round(img.naturalWidth*sc);c.height=Math.round(img.naturalHeight*sc);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    return c.toDataURL('image/jpeg',0.75);
+  }finally{URL.revokeObjectURL(url)}
+}
+function pickDayPhoto(k,after){
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.hidden=true;
+  document.body.appendChild(inp);
+  inp.addEventListener('change',async()=>{
+    const f=inp.files&&inp.files[0];inp.remove();if(!f)return;
+    try{DP[k]=await shrinkDayPhoto(f);const d=dayOf(k);if(!d.checked){d.checked=true;persistDay(k)}persistDayPhoto(k);render();after&&after();toast('Foto do dia postada!')}
+    catch(e){toast('Não consegui abrir essa imagem. Tente outra foto.')}
+  });
+  inp.click();
+}
+function sheetDayPhoto(k){
+  const w=workoutFor(k),dt=parseKey(k),on=S.days[k]?.checked;
+  openSheet(`
+    <div class="sheethead"><div><div class="eyebrow">${WDN[dt.getDay()]} · ${ddmm(k)}</div><h2>${w?esc(w.t):'Foto do dia'}</h2></div>${closeBtn()}</div>
+    <div class="viewer"><img src="${DP[k]}" alt="Foto do dia"></div>
+    <button class="primary" data-act="share" data-k="${k}">Postar com os dados do treino</button>
+    <button class="ghost" data-act="dpPick" data-k="${k}">Trocar foto</button>
+    <button class="ghost danger" data-act="dpDel" data-k="${k}">Apagar foto</button>
+    ${k<=today()?`<button class="link" data-act="calToggle" data-k="${k}">${on?'Desmarcar presença neste dia':'Marcar presença neste dia'}</button>`:''}`);
+}
 function timerBlock(k,d,w){
   const isToday=k===today(),any=d.logs.length||(d.done&&d.done.length);
   if(d.start&&!d.end&&isToday)return `<div class="timer"><div class="clock"><small>Treinando</small><span id="clock">${clk(Date.now()-d.start)}</span></div><button class="sm solid" data-act="finish">Finalizar treino</button></div>`;
@@ -633,6 +698,19 @@ function wrapLines(ctx,t,max,maxLines){
 /* Adesivo compacto (estilo Strava): fundo transparente pra colar por cima de uma foto nos Stories.
    Estilos: branco (texto branco), preto (texto escuro) e cartao (bloco escuro arredondado). */
 async function drawCard(data,style){
+  if(style==='foto'&&DP[data.k]){
+    const st=await drawCard(data,'branco');
+    const [bg,fg]=await Promise.all([DP[data.k],URL.createObjectURL(st)].map(src=>new Promise((ok,err)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=err;i.src=src})));
+    URL.revokeObjectURL(fg.src);
+    const W=1080,H=1920,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+    const sc=Math.max(W/bg.naturalWidth,H/bg.naturalHeight),bw=bg.naturalWidth*sc,bh=bg.naturalHeight*sc;
+    x.drawImage(bg,(W-bw)/2,(H-bh)/2,bw,bh);
+    const sh=fg.naturalHeight,gy=H-sh-260;
+    const g=x.createLinearGradient(0,gy,0,H);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(.45,'rgba(0,0,0,.45)');g.addColorStop(1,'rgba(0,0,0,.75)');
+    x.fillStyle=g;x.fillRect(0,gy,W,H-gy);
+    x.drawImage(fg,0,H-sh-120);
+    return await new Promise(ok=>c.toBlob(ok,'image/png'));
+  }
   try{await Promise.all(['700 100px "Barlow Condensed"','600 40px "Barlow"','500 40px "Barlow"'].map(f=>document.fonts.load(f)))}catch(e){}
   const W=1080,P=70,D='"Barlow Condensed","Arial Narrow",sans-serif',B='"Barlow",system-ui,sans-serif';
   const dark=style==='preto',card=style==='cartao';
@@ -724,7 +802,7 @@ function sheetShare(){
   openSheet(`
     <div class="sheethead"><div><div class="eyebrow">${WDN[parseKey(s.k).getDay()]} · ${ddmm(s.k)}</div><h2>Adesivo do treino</h2></div>${closeBtn()}</div>
     <div class="stickerbox" style="background:${bg}"><img id="shareImg" alt="Prévia do adesivo do treino" ${shareUrl&&s.drawn?`src="${shareUrl}"`:''}></div>
-    <div class="seg seg3"><button class="${s.style==='branco'?'on':''}" data-act="shareOpt" data-f="style" data-v="branco">Texto branco</button><button class="${s.style==='preto'?'on':''}" data-act="shareOpt" data-f="style" data-v="preto">Texto preto</button><button class="${s.style==='cartao'?'on':''}" data-act="shareOpt" data-f="style" data-v="cartao">Cartão</button></div>
+    <div class="seg ${DP[s.k]?'seg4':'seg3'}">${DP[s.k]?`<button class="${s.style==='foto'?'on':''}" data-act="shareOpt" data-f="style" data-v="foto">Com foto</button>`:''}<button class="${s.style==='branco'?'on':''}" data-act="shareOpt" data-f="style" data-v="branco">${DP[s.k]?'Branco':'Texto branco'}</button><button class="${s.style==='preto'?'on':''}" data-act="shareOpt" data-f="style" data-v="preto">${DP[s.k]?'Preto':'Texto preto'}</button><button class="${s.style==='cartao'?'on':''}" data-act="shareOpt" data-f="style" data-v="cartao">Cartão</button></div>
     ${stepper('dur','Tempo de treino','em minutos',m,5)}
     ${canCopyImg()&&window.TREINO_HOSTED?'<button class="primary" data-act="copyImg">Copiar adesivo</button>':''}
     ${canShare?`<button class="${canCopyImg()?'ghost':'primary'}" data-act="shareImg">Compartilhar</button>`:''}
@@ -732,7 +810,7 @@ function sheetShare(){
     <p class="hint" style="margin:0;text-align:left"><b>Como usar no Stories:</b> toque em <b>Copiar adesivo</b>, abra o Instagram, escolha sua foto do Stories, toque na tela e depois em <b>Colar</b>. Ou baixe o PNG e adicione pelo adesivo de galeria.</p>`);
   s.drawn=true;drawShare();
 }
-function openShare(k){ui.share={k,style:ui.share?.style||'branco'};shareUrl&&URL.revokeObjectURL(shareUrl);shareUrl='';sheetShare()}
+function openShare(k){ui.share={k,style:DP[k]?'foto':(ui.share?.style==='foto'?'branco':ui.share?.style||'branco')};shareUrl&&URL.revokeObjectURL(shareUrl);shareUrl='';sheetShare()}
 function setShareDur(){const s=ui.share,v=Math.max(1,Math.round(readNum('dur')));const d=dayOf(s.k);if(d.dur!==v){d.dur=v;persistDay(s.k);drawShare()}}
 const shareName=()=>`victreina-${ui.share.k}.png`;
 async function copyShare(){
@@ -841,6 +919,7 @@ function viewHoje(){
       ${w&&w.items.length?`${pills(wGroups(w))}<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${w.items.length}" aria-valuenow="${done2}"><i style="width:${Math.round(done2/w.items.length*100)}%"></i></div><div class="meta num">${done2===w.items.length?'Treino completo! ':''}${done2} de ${w.items.length} feitos · cerca de ${planMinutes(w)} min${d.w?' · trocado só neste dia':''}</div>`:''}
     </div>
     ${timerBlock(k,d,w)}
+    ${dayPhotoBlock(k)}
     ${!w?`<div class="empty">Dia de descanso. Se quiser treinar, toque em <b>Trocar</b> e escolha um treino.</div>`
       :w.items.length?`<div class="list">${rows}</div><p class="hint" style="margin:0">Toque no círculo para marcar como feito. Toque no nome para anotar carga e repetições.</p>`:`<div class="empty">Este treino ainda não tem exercícios. Adicione na aba Plano.</div>`}
   </div>
@@ -884,7 +963,7 @@ function viewFreq(){
   for(let d=1;d<=dim;d++){
     const k=prefix+pad(d),on=S.days[k]?.checked,fut=k>t;
     const gs=groupsOn(k).slice(0,4);
-    cells+=`<button class="day ${on?'on':''} ${k===t?'today':''} ${fut?'future':''}" data-act="calday" data-k="${k}" ${fut?'disabled':''} aria-label="${d}${on?', presença marcada':''}"><span>${d}</span><span class="dots">${gs.map(g=>`<i style="${gc(g)}"></i>`).join('')}</span></button>`;
+    cells+=`<button class="day ${on?'on':''} ${DP[k]?'ph':''} ${k===t?'today':''} ${fut?'future':''}" data-act="${DP[k]?'dpView':'calday'}" data-k="${k}" ${fut?'disabled':''} ${DP[k]?`style="background-image:url('${DP[k]}')"`:''} aria-label="${d}${on?', presença marcada':''}${DP[k]?', com foto':''}"><span>${d}</span><span class="dots">${gs.map(g=>`<i style="${gc(g)}"></i>`).join('')}</span></button>`;
   }
   const isCur=y===now.getFullYear()&&mo===now.getMonth();
   const weeks=[];for(let i=7;i>=0;i--){const s=addDays(ws,-7*i);weeks.push({s,c:weekCount(s)})}
@@ -908,7 +987,7 @@ function viewFreq(){
       <button class="iconbtn" data-act="month" data-n="1" aria-label="Próximo mês" ${isCur?'disabled':''}>›</button>
     </div>
     <div class="grid7">${['D','S','T','Q','Q','S','S'].map(x=>`<div class="wd">${x}</div>`).join('')}${cells}</div>
-    <p class="hint">Os pontinhos mostram as cores dos grupos treinados. Toque num dia para marcar ou desmarcar presença.</p>
+    <p class="hint">Os pontinhos mostram as cores dos grupos treinados. Toque num dia para marcar ou desmarcar presença. Dias com foto abrem a foto.</p>
   </div>
   <div class="goal"><div><div style="font-weight:600">Meta semanal</div><div class="muted" style="font-size:.85rem">Dias na academia por semana</div></div>
     <div class="mini"><button data-act="goal" data-n="-1" aria-label="Diminuir meta">−</button><span class="num" style="font-family:var(--display);font-size:1.6rem;font-weight:700;min-width:1.2em;text-align:center">${S.goal}</span><button data-act="goal" data-n="1" aria-label="Aumentar meta">+</button></div></div>
@@ -1009,6 +1088,7 @@ function viewPerfil(){
   ${st.groups.length?`<div class="section"><h3>Grupos mais treinados</h3><div class="card"><div class="gbars">${st.groups.map(([g,n])=>`<div class="gbar" style="${gc(g)}"><span>${g}</span><span class="tr"><i style="width:${Math.max(6,Math.round(n/maxG*100))}%"></i></span><span class="n">${n}</span></div>`).join('')}</div></div></div>`:''}
   ${st.best.length?`<div class="section"><h3>Seus recordes</h3><div class="list recs">${st.best.map(b=>`<div class="item" style="${gc(b.e.group)}">${pic(b.e)}<div class="main"><div class="name">${esc(b.e.name)}</div><div class="sub num">${ddmm(b.k)}</div></div><span class="kg">${fmt(b.w)} kg</span></div>`).join('')}</div></div>`:''}
   ${!st.first?`<div class="empty">Registre seu primeiro treino na aba Hoje e suas conquistas aparecem aqui.</div>`:''}
+  ${Object.keys(DP).length?`<div class="section"><h3>Seus registros fotográficos</h3><div class="gallery">${Object.keys(DP).sort().reverse().slice(0,30).map(k=>`<button data-act="dpView" data-k="${k}" aria-label="Foto de ${ddmm(k)}"><img src="${DP[k]}" alt="" loading="lazy"><span>${ddmm(k)}</span></button>`).join('')}</div></div>`:''}
   <div class="section"><h3>Conta</h3><div class="card">${acct()}</div></div>`;
 }
 function sheetNick(){
@@ -1177,6 +1257,13 @@ document.addEventListener('click',ev=>{
   if(a==='group'){ui.group=b.dataset.g;render();return}
   if(a==='photo'){const [x,w,i]=ui.logCtx||[b.dataset.id];return pickPhoto(b.dataset.id,()=>sheetLog(x,w,i))}
   if(a==='unphoto'){const ex=b.dataset.id;delete PH[ex];persistPhoto(ex);render();const [x,w,i]=ui.logCtx||[ex];sheetLog(x,w,i);toast('Voltou ao desenho');return}
+  if(a==='dpPick'){const k=b.dataset.k;return pickDayPhoto(k,()=>{if(sheetRoot.innerHTML)sheetDayPhoto(k)})}
+  if(a==='dpView')return sheetDayPhoto(b.dataset.k);
+  if(a==='dpDel'){
+    if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Toque de novo para apagar';return}
+    const k=b.dataset.k;delete DP[k];persistDayPhoto(k);closeSheet();render();toast('Foto apagada');return;
+  }
+  if(a==='calToggle'){const k=b.dataset.k,d=dayOf(k);d.checked=!d.checked;persistDay(k);closeSheet();render();return}
   if(a==='nick')return sheetNick();
   if(a==='saveNick'){S.nick=document.getElementById('nickIn').value.trim().slice(0,30);persistProfile();closeSheet();render();toast('Nome salvo');return}
   if(a==='tick'){
