@@ -588,7 +588,7 @@ function durMin(d){
 function timerBlock(k,d,w){
   const isToday=k===today(),any=d.logs.length||(d.done&&d.done.length);
   if(d.start&&!d.end&&isToday)return `<div class="timer"><div class="clock"><small>Treinando</small><span id="clock">${clk(Date.now()-d.start)}</span></div><button class="sm solid" data-act="finish">Finalizar treino</button></div>`;
-  if(d.end||any){const m=durMin(d);return `<div class="timer"><div class="clock"><small>${d.end?'Treino finalizado':'Treino do dia'}</small>${m?`${m} min`:'Pronto'}</div><button class="sm solid" data-act="share" data-k="${k}">Compartilhar</button></div>`}
+  if(d.end||any){const m=durMin(d);return `<div class="timer"><div class="clock"><small>${d.end?'Treino finalizado':'Treino do dia'}</small>${m?`${m} min`:'Pronto'}</div>${isToday?'<button class="sm" data-act="restart">Reiniciar</button>':''}<button class="sm solid" data-act="share" data-k="${k}">Compartilhar</button></div>`}
   if(isToday&&w&&w.items.length)return `<div class="timer"><div class="clock"><small>Cronômetro</small>00:00</div><button class="sm solid" data-act="start">Iniciar treino</button></div>`;
   return '';
 }
@@ -1197,6 +1197,17 @@ document.addEventListener('click',ev=>{
     return;
   }
   if(a==='start'){const d=dayOf(ui.date);d.start=Date.now();delete d.end;delete d.dur;d.checked=true;persistDay(ui.date);render();toast('Bom treino!');return}
+  if(a==='restart'){
+    const d=dayOf(ui.date),m=durMin(d);
+    openSheet(`
+      <div class="sheethead"><div><div class="eyebrow">Treino finalizado${m?` · ${m} min`:''}</div><h2>Reiniciar treino</h2></div>${closeBtn()}</div>
+      <p class="note2">Seus checks e as cargas registradas continuam salvos. Só o cronômetro muda.</p>
+      ${m?`<button class="primary" data-act="resume">Continuar de onde parou (${m} min)</button>`:''}
+      <button class="${m?'ghost':'primary'}" data-act="restartZero">Começar o cronômetro do zero</button>`);
+    return;
+  }
+  if(a==='resume'){const d=dayOf(ui.date),m=durMin(d)||0;d.start=Date.now()-m*60000;delete d.end;delete d.dur;persistDay(ui.date);closeSheet();render();toast('Treino retomado');return}
+  if(a==='restartZero'){const d=dayOf(ui.date);d.start=Date.now();delete d.end;delete d.dur;persistDay(ui.date);closeSheet();render();toast('Cronômetro zerado. Bom treino!');return}
   if(a==='finish'){const d=dayOf(ui.date);d.end=Date.now();persistDay(ui.date);render();return openShare(ui.date)}
   if(a==='share')return openShare(b.dataset.k);
   if(a==='shareOpt'){ui.share[b.dataset.f]=b.dataset.v;return sheetShare()}
