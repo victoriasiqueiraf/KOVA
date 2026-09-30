@@ -220,6 +220,15 @@ select,input[type=text]{width:100%;font:inherit;font-size:16px;padding:12px 14px
 .tgl input:checked+i::after{transform:translateX(20px)}
 .tgl input:focus-visible+i{outline:2px solid var(--accent);outline-offset:2px}
 
+/* Outras atividades */
+.actgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.actgrid button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:12px;background:var(--bg);border:1.5px solid transparent;font-size:.75rem;font-weight:600;text-align:center;line-height:1.1}
+.actgrid .pic.sm{width:48px;height:48px;border-radius:12px;grid-template-columns:100%;grid-template-rows:100%}
+.actgrid .pic.sm svg{width:48px;height:48px}
+.actgrid button.on{border-color:var(--accent);background:var(--accent-soft)}
+.day.act{position:relative}
+.day.act::after{content:"";position:absolute;inset:3px;border-radius:8px;border:2px dotted var(--accent);pointer-events:none}
+
 /* Primeiro acesso */
 .goals{display:flex;flex-direction:column;gap:10px}
 .goalc{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:14px 16px;border-radius:14px;background:var(--surface);border:1.5px solid var(--line)}
@@ -415,6 +424,22 @@ const PICS={
   'along-superior':{front:1,j:'h:32,14 s:32,22 p:32,38 e:21,13 w:29,3 e2:43,13 w2:35,3 k:29,48 f:28,57 k2:35,48 f2:36,57'},
   'mobilidade':{eq:'M4 57h56',j:'h:10,38 s:16,42 p:38,40 k:40,56 f:54,56 e:15,49 w:14,56'}
 };
+Object.assign(PICS,{
+  'act-bike':{eq:'M6 46a9 9 0 1 0 18 0a9 9 0 1 0 -18 0M40 46a9 9 0 1 0 18 0a9 9 0 1 0 -18 0M15 46L25 31h19l5 15M25 31l7 15l12-15M22 27h7M44 31l2-6h6',j:'h:37,11 s:33,18 p:25,28 k:32,36 f:32,46 k2:27,40 f2:30,50 e:40,22 w:46,25'},
+  'act-corrida':{eq:'M4 57h56',j:'h:35,9 s:33,16 p:28,32 k:37,41 f:34,55 k2:21,41 f2:12,47 e:39,23 w:44,17 e2:26,22 w2:21,29'},
+  'act-caminhada':{eq:'M4 57h56',j:'h:32,9 s:31,16 p:30,33 k:35,44 f:37,56 k2:26,44 f2:23,56 e:35,24 w:37,31 e2:27,24 w2:25,31'},
+  'act-trilha':{eq:'M4 60L60 44M40 28L42 49',j:'h:30,10 s:29,17 p:28,33 k:34,40 f:36,50 k2:24,44 f2:22,55 e:36,23 w:40,28 e2:24,24 w2:21,30'},
+  'act-natacao':{eq:'M4 48q5-4 10 0t10 0t10 0t10 0t10 0t10 0',j:'h:48,37 s:42,39 p:24,41 k:14,40 f:5,42 e:36,29 w:52,30 e2:46,45 w2:54,47'},
+  'act-escalada':{eq:'M52 2v60',o:'49,6,2.6;49,20,2.6;49,47,2.6;44,56,2.6',j:'h:38,15 s:38,22 p:38,37 k:44,43 f:47,48 k2:34,48 f2:41,56 e:42,13 w:47,6 e2:44,25 w2:47,20'},
+  'act-yoga':{front:1,eq:'M6 57h52',j:'h:32,12 s:32,20 p:32,35 k:21,44 f:14,56 k2:43,45 f2:50,56 e:21,20 w:9,20 e2:43,20 w2:55,20'},
+  'act-pilates':{eq:'M6 56h52',j:'h:14,31 s:18,38 p:28,52 k:38,40 f:48,30 e:28,39 w:38,34'},
+  'act-danca':{front:1,eq:'M8 57h48',j:'h:30,10 s:31,17 p:32,34 e:24,10 w:20,3 e2:40,22 w2:48,18 k:26,45 f:22,56 k2:38,44 f2:46,50'},
+  'act-futebol':{eq:'M4 57h56',o:'52,50,5',j:'h:30,10 s:30,17 p:30,34 k:28,46 f:28,57 k2:38,40 f2:45,47 e:22,24 w:18,31 e2:38,23 w2:42,29'},
+  'act-beach':{eq:'M4 57h56M44 8l5-5',o:'51,2,4;56,15,2.5',j:'h:30,11 s:30,18 p:30,35 k:26,46 f:24,57 k2:36,46 f2:38,57 e:38,14 w:44,8 e2:22,24 w2:18,31'},
+  'act-luta':{eq:'M4 57h56',o:'41,18,4.2;34,21,4.2',j:'h:30,11 s:30,18 p:30,35 k:24,46 f:20,57 k2:36,46 f2:41,57 e:37,27 w:41,19 e2:26,27 w2:34,21'},
+  'act-funcional':{front:1,eq:'M4 57h56',j:'h:32,10 s:32,17 p:32,34 e:24,10 w:18,4 e2:40,10 w2:46,4 k:26,45 f:22,55 k2:38,45 f2:42,55'},
+  'act-outro':{front:1,eq:'M4 57h56M52 4l2.2 4.6 5 .6-3.7 3.4 1 5-4.5-2.5-4.5 2.5 1-5-3.7-3.4 5-.6z',j:'h:30,13 s:30,20 p:30,37 e:23,13 w:19,6 e2:37,13 w2:41,6 k:26,47 f:24,57 k2:34,47 f2:36,57'}
+});
 const picCache={};
 function picSvg(id){
   if(picCache[id])return picCache[id];
@@ -520,9 +545,10 @@ function persistProfile(){saveLocal();if(backend.col)queueWrite('profile',profil
 function persistDay(k){
   saveLocal();scheduleStats();if(!backend.col)return;
   const d=S.days[k];
-  if(!d||(!d.checked&&!d.logs.length&&!d.w&&!d.start&&!(d.done&&d.done.length)))return queueWrite('day-'+k,null);
+  if(!d||(!d.checked&&!d.logs.length&&!d.w&&!d.start&&!(d.done&&d.done.length)&&!(d.acts&&d.acts.length)))return queueWrite('day-'+k,null);
   const body={kind:'day',date:k,checked:!!d.checked,logs:d.logs};if(d.w)body.w=d.w;if(d.done)body.done=d.done;
   for(const f of ['start','end','dur'])if(d[f]!=null)body[f]=d[f];
+  if(d.acts&&d.acts.length)body.acts=d.acts;
   queueWrite('day-'+k,body);
 }
 function queueWrite(id,body){pending[id]={body};if(!busy[id])flush(id)}
@@ -580,7 +606,7 @@ async function attach(col,skipCache){
   backend.unsubs.push(col.where('kind','==','day').onSnapshot(q=>{
     if(skipCache&&q.metadata.fromCache)return;
     const days={};
-    for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:JSON.parse(JSON.stringify(d.logs||[]))};if(d.w)days[d.date].w=d.w;if(Array.isArray(d.done))days[d.date].done=[...d.done];for(const f of ['start','end','dur'])if(d[f]!=null)days[d.date][f]=d[f]}
+    for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:JSON.parse(JSON.stringify(d.logs||[]))};if(d.w)days[d.date].w=d.w;if(Array.isArray(d.done))days[d.date].done=[...d.done];for(const f of ['start','end','dur'])if(d[f]!=null)days[d.date][f]=d[f];if(Array.isArray(d.acts))days[d.date].acts=JSON.parse(JSON.stringify(d.acts))}
     for(const k of Object.keys(S.days)){const id='day-'+k;if(pending[id]||busy[id])days[k]=S.days[k]}
     S.days=days;saveLocal();render();
   },()=>{}));
@@ -832,8 +858,8 @@ async function drawCard(data,style){
     y+=GAP-pgap;
   }
   // blocos de números
-  const stats=[['TEMPO',data.dur?String(data.dur):'—',data.dur?'min':''],['EXERCÍCIOS',String(data.rows.length),'']];
-  if(showVol())stats.push(['VOLUME',data.volume?Math.round(data.volume).toLocaleString('pt-BR'):'—',data.volume?'kg':'']);
+  const stats=data.stats?data.stats.slice():[['TEMPO',data.dur?String(data.dur):'—',data.dur?'min':''],['EXERCÍCIOS',String(data.rows.length),'']];
+  if(!data.stats&&showVol())stats.push(['VOLUME',data.volume?Math.round(data.volume).toLocaleString('pt-BR'):'—',data.volume?'kg':'']);
   const sw=(inner-GAP*(stats.length-1))/stats.length;
   // mesmo tamanho de número em todos os blocos, diminuindo se algum não couber
   let vs=118;
@@ -872,7 +898,7 @@ const showVol=()=>{try{return localStorage.getItem(LS+'-showvol')==='1'}catch(e)
 let shareBlob=null,shareUrl='';
 async function drawShare(){
   const s=ui.share;if(!s)return;
-  const blob=await drawCard(sessionData(s.k),s.style);
+  const blob=await drawCard(s.act?actData(s.k,s.act):sessionData(s.k),s.style);
   if(ui.share!==s)return;
   if(shareUrl)URL.revokeObjectURL(shareUrl);
   shareBlob=blob;shareUrl=URL.createObjectURL(blob);
@@ -884,15 +910,15 @@ function sheetShare(){
   const canShare=!!(window.TREINO_HOSTED&&navigator.canShare&&navigator.canShare({files:[new File(['x'],'t.png',{type:'image/png'})]}));
   const bg=s.style==='preto'?'#f1efe9':'#3b3f47';
   openSheet(`
-    <div class="sheethead"><div><div class="eyebrow">${WDN[parseKey(s.k).getDay()]} · ${ddmm(s.k)}</div><h2>Adesivo do treino</h2></div>${closeBtn()}</div>
+    <div class="sheethead"><div><div class="eyebrow">${WDN[parseKey(s.k).getDay()]} · ${ddmm(s.k)}</div><h2>${s.act?'Adesivo da atividade':'Adesivo do treino'}</h2></div>${closeBtn()}</div>
     <div class="stickerbox" style="background:${bg}"><img id="shareImg" alt="Prévia do adesivo do treino" ${shareUrl&&s.drawn?`src="${shareUrl}"`:''}></div>
     <div class="seg ${DP[s.k]?'seg4':'seg3'}">${DP[s.k]?`<button class="${s.style==='foto'?'on':''}" data-act="shareOpt" data-f="style" data-v="foto">Com foto</button>`:''}<button class="${s.style==='branco'?'on':''}" data-act="shareOpt" data-f="style" data-v="branco">${DP[s.k]?'Branco':'Texto branco'}</button><button class="${s.style==='preto'?'on':''}" data-act="shareOpt" data-f="style" data-v="preto">${DP[s.k]?'Preto':'Texto preto'}</button><button class="${s.style==='cartao'?'on':''}" data-act="shareOpt" data-f="style" data-v="cartao">Cartão</button></div>
-    <label class="tgl"><span><b>Mostrar volume (kg)</b><small>Soma de carga × repetições × séries do treino</small></span><input type="checkbox" id="shareVol" role="switch" ${showVol()?'checked':''}><i></i></label>
-    ${stepper('dur','Tempo de treino','em minutos',m,5)}
+    ${s.act?'':`<label class="tgl"><span><b>Mostrar volume (kg)</b><small>Soma de carga × repetições × séries do treino</small></span><input type="checkbox" id="shareVol" role="switch" ${showVol()?'checked':''}><i></i></label>`}
+    ${s.act?'':stepper('dur','Tempo de treino','em minutos',m,5)}
     ${canCopyImg()&&window.TREINO_HOSTED?'<button class="primary" data-act="copyImg">Copiar adesivo</button>':''}
     ${canShare?`<button class="${canCopyImg()?'ghost':'primary'}" data-act="shareImg">Compartilhar</button>`:''}
     <button class="ghost" data-act="saveImg">Baixar PNG sem fundo</button>
-    ${fb.uid&&S.groups.length?`<button class="ghost" data-act="gPost" data-k="${s.k}">Postar no feed dos grupos</button>`:''}
+    ${fb.uid&&S.groups.length&&!s.act?`<button class="ghost" data-act="gPost" data-k="${s.k}">Postar no feed dos grupos</button>`:''}
     <p class="hint" style="margin:0;text-align:left"><b>Como usar no Stories:</b> toque em <b>Copiar adesivo</b>, abra o Instagram, escolha sua foto do Stories, toque na tela e depois em <b>Colar</b>. Ou baixe o PNG e adicione pelo adesivo de galeria.</p>`);
   s.drawn=true;drawShare();
 }
@@ -1271,6 +1297,72 @@ document.addEventListener('click',async ev=>{
 document.addEventListener('change',ev=>{if(ev.target.id==='obW'||ev.target.id==='obH'){readOb();const h=document.getElementById('obBmi');if(h)h.textContent=bmiHint()}});
 
 
+/* ================= Outras atividades (fora da academia) ================= */
+// [id, nome, ícone, tem distância?]
+// [id, nome, grupo (cor), tem distância?]
+const ACTS=[['bike','Bike','Cardio',1],['corrida','Corrida','Cardio',1],['caminhada','Caminhada','Cardio',1],['trilha','Trilha','Cardio',1],['natacao','Natação','Cardio',1],
+  ['escalada','Escalada','Cardio',0],['yoga','Yoga','Alongamento',0],['pilates','Pilates','Alongamento',0],['danca','Dança','Alongamento',0],['futebol','Futebol','Cardio',0],
+  ['beach','Beach tennis','Cardio',0],['luta','Luta','Cardio',0],['funcional','Funcional','Cardio',0],['outro','Outra','Cardio',0]];
+const actInfo=t=>{const a=ACTS.find(x=>x[0]===t)||ACTS[ACTS.length-1];return {id:a[0],n:a[1],g:a[2],dist:!!a[3]}};
+const actPic=(t,cls)=>`<span class="pic ${cls||''}" style="${gc(actInfo(t).g)}">${picSvg('act-'+actInfo(t).id)}</span>`;
+const actName=a=>a.type==='outro'&&a.note?a.note:actInfo(a.type).n;
+function actTxt(a){return [a.min?`${a.min} min`:'',a.km?`${fmt(a.km)} km`:''].filter(Boolean).join(' · ')}
+function actsBlock(k){
+  const list=(S.days[k]?.acts)||[];
+  return `<div class="section"><h3>Outras atividades</h3>
+    ${list.length?`<div class="list">${list.map(a=>`<button class="row actrow" style="${gc(actInfo(a.type).g)}" data-act="actEdit" data-id="${a.id}">${actPic(a.type)}<div class="main"><div class="name">${esc(actName(a))}</div><div class="sub num">${esc(actTxt(a))}${a.type!=='outro'&&a.note?` · ${esc(a.note)}`:''}</div></div><span class="chev">›</span></button>`).join('')}</div>`:''}
+    <button class="addphoto" data-act="actNew" style="min-height:52px">+ Registrar bike, escalada, corrida…</button>
+    ${list.length?'':'<p class="hint" style="margin:0">Pra quando você se mexeu fora da academia.</p>'}</div>`;
+}
+function sheetAct(){
+  const a=ui.act,info=actInfo(a.type),isNew=!a.id;
+  openSheet(`
+    <div class="sheethead"><div><div class="eyebrow">${WDN[parseKey(ui.date).getDay()]} · ${ddmm(ui.date)}</div><h2>${isNew?'Outra atividade':esc(actName(a))}</h2></div>${closeBtn()}</div>
+    <div class="actgrid">${ACTS.map(([id,n])=>`<button class="${a.type===id?'on':''}" data-act="actType" data-t="${id}">${actPic(id,'sm')}${n}</button>`).join('')}</div>
+    ${a.type==='outro'?`<div class="field"><label for="actName">Qual atividade?</label><input type="text" id="actName" value="${esc(a.note||'')}" placeholder="Ex.: Surf" maxlength="30" autocomplete="off"></div>`:''}
+    <div class="steppers">
+      ${stepper('actMin','Duração','em minutos',a.min||30,5)}
+      ${info.dist?stepper('actKm','Distância','em km (opcional)',fmt(a.km||0),0.5):''}
+    </div>
+    ${a.type!=='outro'?`<div class="field"><label for="actNote">Observação (opcional)</label><input type="text" id="actNote" value="${esc(a.note||'')}" placeholder="Ex.: Parque do Ibirapuera, via 5+" maxlength="60" autocomplete="off"></div>`:''}
+    <button class="primary" data-act="actSave">${isNew?'Salvar atividade':'Salvar alterações'}</button>
+    ${isNew?'':`<button class="ghost" data-act="actShare" data-id="${a.id}">Compartilhar no Stories</button><button class="ghost danger" data-act="actDel" data-id="${a.id}">Apagar atividade</button>`}`);
+}
+function readAct(){
+  const a=ui.act,v=id=>document.getElementById(id);
+  if(v('actMin'))a.min=Math.max(1,Math.round(readNum('actMin')));
+  if(v('actKm'))a.km=Math.round(readNum('actKm')*10)/10;
+  if(v('actNote'))a.note=v('actNote').value.trim();
+  if(v('actName'))a.note=v('actName').value.trim();
+}
+function actData(k,id){
+  const a=((S.days[k]||{}).acts||[]).find(x=>x.id===id);if(!a)return sessionData(k);
+  const ws=weekStart(k),week=[0,1,2,3,4,5,6].map(i=>!!S.days[addDays(ws,i)]?.checked);
+  const stats=[['TEMPO',a.min?String(a.min):'—',a.min?'min':'']];
+  if(a.km)stats.push(['DISTÂNCIA',fmt(a.km),'km']);
+  return {k,title:actName(a),groups:[],rows:[],volume:0,dur:a.min,week,weekCount:week.filter(Boolean).length,stats};
+}
+document.addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-act]');if(!b)return;
+  const a=b.dataset.act,k=ui.date;
+  if(a==='actNew'){ui.act={type:'bike',min:30,km:0,note:''};return sheetAct()}
+  if(a==='actEdit'){const x=(S.days[k]?.acts||[]).find(y=>y.id===b.dataset.id);if(!x)return;ui.act={...x};return sheetAct()}
+  if(a==='actType'){readAct();if(ui.act.type==='outro'||b.dataset.t==='outro')ui.act.note='';ui.act.type=b.dataset.t;if(!actInfo(ui.act.type).dist)ui.act.km=0;return sheetAct()}
+  if(a==='actSave'){
+    readAct();const x=ui.act;
+    if(x.type==='outro'&&!x.note){toast('Escreva qual foi a atividade');return}
+    const d=dayOf(k);if(!d.acts)d.acts=[];
+    const item={id:x.id||newId(),type:x.type,min:x.min||0,t:x.t||Date.now()};if(x.km)item.km=x.km;if(x.note)item.note=x.note;
+    const i=d.acts.findIndex(y=>y.id===item.id);if(i>=0)d.acts[i]=item;else d.acts.push(item);
+    persistDay(k);closeSheet();ui.act=null;render();toast(`${actName(item)} registrada!`);return;
+  }
+  if(a==='actDel'){
+    if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Toque de novo pra apagar';return}
+    const d=S.days[k];if(d&&d.acts){d.acts=d.acts.filter(y=>y.id!==b.dataset.id);persistDay(k)}closeSheet();ui.act=null;render();toast('Atividade apagada');return;
+  }
+  if(a==='actShare'){ui.share={k,act:b.dataset.id,style:DP[k]?'foto':(ui.share?.style==='foto'?'branco':ui.share?.style||'branco')};shareUrl&&URL.revokeObjectURL(shareUrl);shareUrl='';return sheetShare()}
+});
+
 /* ================= Telas ================= */
 const app=document.getElementById('app');
 function render(){
@@ -1361,6 +1453,7 @@ function viewHoje(){
     ${!w?`<div class="empty">Dia de descanso. Se quiser treinar, toque em <b>Trocar</b> e escolha um treino.</div>`
       :w.items.length?`<div class="list">${rows}</div><p class="hint" style="margin:0">Toque no círculo para marcar como feito. Toque no nome para anotar carga e repetições.</p>`:`<div class="empty">Este treino ainda não tem exercícios. Adicione na aba Plano.</div>`}
   </div>
+  ${actsBlock(k)}
   <div class="section">
     <h3>Registrar outro exercício</h3>
     <div class="chips">${GN.map(g=>`<button class="chip ${g===ui.group?'on':''}" style="${gc(g)}" data-act="group" data-g="${g}">${g}${done.includes(g)?'<span class="done">✓</span>':''}</button>`).join('')}</div>
@@ -1403,7 +1496,8 @@ function viewFreq(){
   for(let d=1;d<=dim;d++){
     const k=prefix+pad(d),on=S.days[k]?.checked,fut=k>t;
     const gs=groupsOn(k).slice(0,4);
-    cells+=`<button class="day ${on?'on':''} ${DP[k]?'ph':''} ${k===t?'today':''} ${fut?'future':''}" data-act="${DP[k]?'dpView':'calday'}" data-k="${k}" ${fut?'disabled':''} ${DP[k]?`style="background-image:url('${DP[k]}')"`:''} aria-label="${d}${on?', presença marcada':''}${DP[k]?', com foto':''}"><span>${d}</span><span class="dots">${gs.map(g=>`<i style="${gc(g)}"></i>`).join('')}</span></button>`;
+    const hasAct=!!(S.days[k]?.acts||[]).length;
+    cells+=`<button class="day ${on?'on':''} ${hasAct?'act':''} ${DP[k]?'ph':''} ${k===t?'today':''} ${fut?'future':''}" data-act="${DP[k]?'dpView':'calday'}" data-k="${k}" ${fut?'disabled':''} ${DP[k]?`style="background-image:url('${DP[k]}')"`:''} aria-label="${d}${on?', presença marcada':''}${hasAct?', outra atividade':''}${DP[k]?', com foto':''}"><span>${d}</span><span class="dots">${gs.map(g=>`<i style="${gc(g)}"></i>`).join('')}</span></button>`;
   }
   const isCur=y===now.getFullYear()&&mo===now.getMonth();
   const weeks=[];for(let i=7;i>=0;i--){const s=addDays(ws,-7*i);weeks.push({s,c:weekCount(s)})}
@@ -1427,8 +1521,11 @@ function viewFreq(){
       <button class="iconbtn" data-act="month" data-n="1" aria-label="Próximo mês" ${isCur?'disabled':''}>›</button>
     </div>
     <div class="grid7">${['D','S','T','Q','Q','S','S'].map(x=>`<div class="wd">${x}</div>`).join('')}${cells}</div>
-    <p class="hint">Os pontinhos mostram as cores dos grupos treinados. Toque num dia para marcar ou desmarcar presença. Dias com foto abrem a foto.</p>
+    <p class="hint">Os pontinhos mostram as cores dos grupos treinados. Toque num dia para marcar ou desmarcar presença. Dias com foto abrem a foto. O anel pontilhado marca outras atividades fora da academia.</p>
   </div>
+  ${(()=>{const acts=Object.keys(S.days).filter(k=>k.startsWith(prefix)).flatMap(k=>S.days[k].acts||[]);if(!acts.length)return '';
+    const mins=acts.reduce((s,a)=>s+(a.min||0),0),byType={};for(const a of acts){const n=actName(a);byType[n]=(byType[n]||0)+1}
+    return `<div class="card"><div style="font-weight:600">Outras atividades no mês</div><div class="muted num" style="font-size:.9rem;margin-top:2px">${acts.length} ${acts.length===1?'atividade':'atividades'} · ${mins>=60?`${Math.floor(mins/60)}h${pad(mins%60)}`:`${mins} min`} · ${Object.entries(byType).map(([n,c])=>`${esc(n)}${c>1?` ×${c}`:''}`).join(', ')}</div></div>`})()}
   <div class="goal"><div><div style="font-weight:600">Meta semanal</div><div class="muted" style="font-size:.85rem">Dias na academia por semana</div></div>
     <div class="mini"><button data-act="goal" data-n="-1" aria-label="Diminuir meta">−</button><span class="num" style="font-family:var(--display);font-size:1.6rem;font-weight:700;min-width:1.2em;text-align:center">${S.goal}</span><button data-act="goal" data-n="1" aria-label="Aumentar meta">+</button></div></div>
   <div class="section"><h3>Últimas 8 semanas</h3>
