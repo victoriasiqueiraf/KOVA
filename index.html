@@ -190,12 +190,31 @@ select,input[type=text]{width:100%;font:inherit;font-size:16px;padding:12px 14px
 .timer .sm{min-height:44px}
 .sm.solid{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .seg3{grid-template-columns:repeat(3,1fr)}
-.shareimg{display:block;margin:0 auto;max-width:100%;max-height:52vh;border-radius:14px;box-shadow:var(--shadow);background:repeating-conic-gradient(var(--line) 0 25%,var(--surface) 0 50%) 0 0/20px 20px}
+.stickerbox{border-radius:16px;padding:18px;display:grid;place-items:center}
+.stickerbox img{display:block;max-width:100%;max-height:34vh}
 
 /* Tab bar */
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
-.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
-.tab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 2px 8px;font-size:.72rem;font-weight:600;color:var(--muted)}
+.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.tab .av{width:24px;height:24px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px transparent}
+.tab.on .av{box-shadow:0 0 0 2px var(--accent)}
+.profhead{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding-block:8px}
+.avatar{width:104px;height:104px;border-radius:50%;object-fit:cover;background:var(--accent-soft);display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:2.6rem;color:var(--accent);box-shadow:0 0 0 4px var(--surface),0 0 0 6px var(--accent)}
+.profhead h1{font-size:2.2rem}
+.profhead .since{font-size:.88rem;color:var(--muted)}
+.gbars{display:flex;flex-direction:column;gap:10px}
+.gbar{display:grid;grid-template-columns:96px 1fr 34px;gap:10px;align-items:center;font-size:.9rem}
+.gbar .tr{height:12px;border-radius:6px;background:var(--line);overflow:hidden}
+.gbar .tr i{display:block;height:100%;border-radius:6px;background:var(--gc)}
+.gbar .n{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.recs .item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid var(--line)}
+.recs .item:first-child{border-top:0}
+.recs .item .main{flex:1;min-width:0}
+.recs .item .name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recs .item .sub{font-size:.82rem;color:var(--muted)}
+.recs .kg{font-family:var(--display);font-weight:700;font-size:1.4rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.recs .pic{width:44px;height:44px}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 8px;font-size:.68rem;font-weight:600;color:var(--muted)}
 .tab svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tab.on{color:var(--accent)}
 
@@ -243,6 +262,7 @@ select,input[type=text]{width:100%;font:inherit;font-size:16px;padding:12px 14px
   <button class="tab" data-tab="plano"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>Plano</button>
   <button class="tab" data-tab="freq"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8.5 14.5l2 2 4-4"/></svg>Frequência</button>
   <button class="tab" data-tab="prog"><svg viewBox="0 0 24 24"><path d="M4 19h16M5 15l4.5-4.5 3.5 3 6-6.5M15 7h4v4"/></svg>Progresso</button>
+  <button class="tab" data-tab="perfil" id="tabPerfil"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20c1.4-3.6 4.2-5.4 7.5-5.4s6.1 1.8 7.5 5.4"/></svg>Perfil</button>
 </div></nav>
 <div id="sheetRoot"></div>
 <div id="toast" class="toast" hidden></div>
@@ -393,7 +413,7 @@ function ensureDefaults(){
 let PH={};try{PH=JSON.parse(localStorage.getItem(LS+'-photos')||'{}')||{}}catch(e){}
 const now=new Date();
 const ui={tab:'treino',date:today(),group:null,month:new Date(now.getFullYear(),now.getMonth(),1),prog:null,sync:'local',email:'',swap:null,draft:null};
-try{const t=localStorage.getItem(LS+'-tab');if(['treino','plano','freq','prog'].includes(t))ui.tab=t}catch(e){}
+try{const t=localStorage.getItem(LS+'-tab');if(['treino','plano','freq','prog','perfil'].includes(t))ui.tab=t}catch(e){}
 
 /* ================= Armazenamento =================
    Sempre salva neste aparelho (localStorage). Com conta conectada, também salva na nuvem:
@@ -407,7 +427,7 @@ function persistPhoto(ex){
   if(backend.col)queueWrite('photo-'+ex,PH[ex]?{kind:'photo',ex,data:PH[ex]}:null);
 }
 function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
-const profileBody=()=>({v:S.v,goal:S.goal,exercises:S.exercises,workouts:S.workouts,schedule:S.schedule});
+const profileBody=()=>({v:S.v,goal:S.goal,nick:S.nick||'',exercises:S.exercises,workouts:S.workouts,schedule:S.schedule});
 function persistProfile(){saveLocal();if(backend.col)queueWrite('profile',profileBody())}
 function persistDay(k){
   saveLocal();if(!backend.col)return;
@@ -452,7 +472,7 @@ async function attach(col,skipCache){
     if(!s.exists||(skipCache&&s.metadata.fromCache)||pending.profile||busy.profile)return;
     const d=JSON.parse(JSON.stringify(s.data()));
     if(Array.isArray(d.exercises))S.exercises=d.exercises;
-    S.goal=d.goal||S.goal;S.v=d.v||1;S.workouts=d.workouts;S.schedule=d.schedule;
+    S.goal=d.goal||S.goal;S.v=d.v||1;S.nick=d.nick||'';S.workouts=d.workouts;S.schedule=d.schedule;
     if(ensureDefaults())persistProfile();else saveLocal();
     render();
   },()=>{}));
@@ -494,8 +514,8 @@ async function connectFirebase(){
   fb.auth=firebase.auth();fb.ready=true;
   fb.auth.getRedirectResult().catch(e=>toast('Não foi possível entrar com Google ('+e.code+').'));
   fb.auth.onAuthStateChanged(async u=>{
-    if(u){ui.email=u.email||'';await attach(fs.collection('users').doc(u.uid).collection('data'),false);ui.sync='google'}
-    else{detach();ui.sync='local';ui.email=''}
+    if(u){ui.email=u.email||'';ui.name=u.displayName||'';ui.photo=u.photoURL||'';await attach(fs.collection('users').doc(u.uid).collection('data'),false);ui.sync='google'}
+    else{detach();ui.sync='local';ui.email='';ui.name='';ui.photo=''}
     render();
   });
   render();
@@ -610,105 +630,102 @@ function wrapLines(ctx,t,max,maxLines){
   if(lines.length>maxLines){const keep=lines.slice(0,maxLines);keep[maxLines-1]=fit(ctx,lines.slice(maxLines-1).join(' '),max);return keep}
   return lines;
 }
-async function drawCard(data,fmt,theme){
-  try{await Promise.all(['700 100px "Barlow Condensed"','600 40px "Barlow"','400 40px "Barlow"'].map(f=>document.fonts.load(f)))}catch(e){}
-  const T=IMG_THEME[theme],W=1080,H=fmt==='feed'?1350:1920,P=90,story=fmt!=='feed';
-  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
-  const D='"Barlow Condensed","Arial Narrow",sans-serif',B='"Barlow",system-ui,sans-serif';
-  if(T.bg){const g=x.createLinearGradient(0,0,W*.4,H);g.addColorStop(0,T.bg[0]);g.addColorStop(1,T.bg[1]);x.fillStyle=g;x.fillRect(0,0,W,H)}
-  // faixa de cores dos grupos no topo
-  const gs=data.groups.length?data.groups:['Abdômen'];
-  if(theme!=='clear')gs.forEach((g,i)=>{x.fillStyle=groupColor(g,theme);x.fillRect(i*W/gs.length,0,W/gs.length+1,14)});
-  if(theme==='clear'){x.shadowColor='rgba(0,0,0,.45)';x.shadowBlur=18;x.shadowOffsetY=2}
-  let y=story?150:120;
-  x.textBaseline='alphabetic';
-  x.font=`600 34px ${B}`;x.fillStyle=T.muted;x.textAlign='left';
-  x.fillText('VICTREINA',P,y);
-  const dt=parseKey(data.k),dateTxt=`${WDN[dt.getDay()]}, ${fmtLong.format(dt)}`;
-  x.textAlign='right';x.fillText(dateTxt,W-P,y);x.textAlign='left';
-  // bloco central: título, grupos, números e recordes (centralizado na altura livre)
-  const ts=story?190:150,vs=story?150:118,ph=58,pg=14;
-  x.font=`700 ${ts}px ${D}`;
-  const tl=wrapLines(x,data.title.toUpperCase(),W-2*P,2);
-  x.font=`600 36px ${B}`;
-  const pillRows=[];let row=[],rw=0;
-  for(const g of data.groups){const tw=x.measureText(g).width+64;if(row.length&&rw+tw>W-2*P){pillRows.push(row);row=[];rw=0}row.push([g,tw]);rw+=tw+pg}
-  if(row.length)pillRows.push(row);
+/* Adesivo compacto (estilo Strava): fundo transparente pra colar por cima de uma foto nos Stories.
+   Estilos: branco (texto branco), preto (texto escuro) e cartao (bloco escuro arredondado). */
+async function drawCard(data,style){
+  try{await Promise.all(['700 100px "Barlow Condensed"','600 40px "Barlow"','500 40px "Barlow"'].map(f=>document.fonts.load(f)))}catch(e){}
+  const W=1080,P=70,D='"Barlow Condensed","Arial Narrow",sans-serif',B='"Barlow",system-ui,sans-serif';
+  const dark=style==='preto',card=style==='cartao';
+  const fg=dark?'#14171c':'#ffffff',mu=dark?'rgba(20,23,28,.7)':'rgba(255,255,255,.82)';
+  const pal=IMG_COLORS[dark?'light':'dark'],col=g=>pal[(GROUPS.find(x=>x.n===g)||GROUPS[9]).v];
+  const okc=dark?'#1b7f45':'#50c683';
+  // medidas antes de desenhar, pra altura ficar do tamanho do conteúdo
+  const m=document.createElement('canvas').getContext('2d');
+  const ts=112;m.font=`700 ${ts}px ${D}`;
+  const tl=wrapLines(m,data.title.toUpperCase(),W-2*P,2);
   const prs=data.rows.filter(r=>r.pr).length;
-  const blockH=tl.length*ts*.92+(pillRows.length?40+pillRows.length*(ph+pg)-pg:0)+(story?130:80)+34+vs+(prs?90:0);
-  const wy=H-(story?190:150),top=y+40,avail=wy-110-top;
-  y=top+Math.max(0,(avail-blockH)/2);
-  x.font=`700 ${ts}px ${D}`;x.fillStyle=T.fg;
-  for(const l of tl){y+=ts*.92;x.fillText(l,P,y)}
-  if(pillRows.length){
-    y+=48;x.font=`600 36px ${B}`;
-    for(const r of pillRows){
-      let px=P;
-      for(const [g,tw] of r){
-        x.save();x.shadowColor='transparent';rr(x,px,y,tw,ph,ph/2);x.fillStyle=groupColor(g,theme);x.globalAlpha=theme==='clear'?.9:.2;x.fill();x.restore();
-        x.fillStyle=theme==='clear'?'#fff':groupColor(g,theme);x.beginPath();x.arc(px+28,y+ph/2,9,0,7);x.fill();
-        x.fillStyle=T.fg;x.fillText(g,px+46,y+ph/2+13);px+=tw+pg;
-      }
-      y+=ph+pg;
-    }
-    y-=pg;
-  }
-  y+=story?130:80;
   const stats=[[data.dur?String(data.dur):'—',data.dur?'min':'','TEMPO'],[data.volume?Math.round(data.volume).toLocaleString('pt-BR'):'—',data.volume?'kg':'','VOLUME'],[String(data.rows.length),'','EXERCÍCIOS']];
-  const cw=(W-2*P)/3;
-  // diminui os números se algum não couber na sua coluna
-  let vsz=vs;
-  for(const [v,u] of stats){x.font=`700 ${vsz}px ${D}`;let wv=x.measureText(v).width;x.font=`700 ${Math.round(vsz*.36)}px ${D}`;wv+=u?x.measureText(u).width+8:0;if(wv>cw-24)vsz=Math.floor(vsz*(cw-24)/wv)}
-  stats.forEach(([v,u,l],i)=>{
-    const sx=P+i*cw;
-    x.font=`600 32px ${B}`;x.fillStyle=T.muted;x.fillText(l,sx,y);
-    x.font=`700 ${vsz}px ${D}`;x.fillStyle=T.fg;x.fillText(v,sx,y+34+vs*.9);
-    if(u){const vw=x.measureText(v).width;x.font=`700 ${Math.round(vsz*.36)}px ${D}`;x.fillStyle=T.muted;x.fillText(u,sx+vw+8,y+34+vs*.9)}
-  });
-  y+=34+vs;
-  if(prs){
-    y+=40;x.save();x.shadowColor='transparent';x.font=`700 34px ${B}`;
-    const t=`${prs} ${prs===1?'RECORDE':'RECORDES'} DE CARGA`,tw=x.measureText(t).width+60;
-    rr(x,P,y,tw,56,28);x.fillStyle=T.ok;x.fill();x.fillStyle=theme==='light'?'#fff':'#0b0e14';x.fillText(t,P+30,y+40);x.restore();
+  const vs=104,top=card?80:40;
+  const H=top+34+34+tl.length*ts*.9+18+40+(data.groups.length?30+44:0)+64+30+12+vs+(prs?40+56:0)+(card?80:40);
+  const c=document.createElement('canvas');c.width=W;c.height=Math.ceil(H);const x=c.getContext('2d');
+  if(card){
+    rr(x,0,0,W,c.height,64);x.fillStyle='#14171c';x.fill();
+    x.save();rr(x,0,0,W,c.height,64);x.clip();
+    const gs=data.groups.length?data.groups:['Abdômen'];gs.forEach((g,i)=>{x.fillStyle=col(g);x.fillRect(i*W/gs.length,0,W/gs.length+1,16)});
+    x.restore();
   }
-  // semana
-  const dots=['D','S','T','Q','Q','S','S'],r0=34,gap=(W-2*P-7*2*r0)/6;
-  x.font=`600 30px ${B}`;x.fillStyle=T.muted;x.fillText(`${data.weekCount} ${data.weekCount===1?'dia':'dias'} na academia esta semana`,P,wy-60);
-  dots.forEach((l,i)=>{
-    const cx=P+r0+i*(2*r0+gap),on=data.week[i];
-    x.beginPath();x.arc(cx,wy,r0,0,7);
-    if(on){x.fillStyle=T.accent;x.fill()}else{x.save();x.shadowColor='transparent';x.lineWidth=3;x.strokeStyle=T.line;x.stroke();x.restore()}
-    x.font=`700 30px ${B}`;x.textAlign='center';x.fillStyle=on?(theme==='dark'?'#0b0e14':theme==='light'?'#fff':'#14171c'):T.muted;x.fillText(l,cx,wy+11);x.textAlign='left';
+  if(style==='branco'){x.shadowColor='rgba(0,0,0,.4)';x.shadowBlur=20;x.shadowOffsetY=2}
+  x.textAlign='center';x.textBaseline='alphabetic';
+  let y=top+34;
+  x.font=`700 30px ${B}`;x.fillStyle=mu;
+  x.fillText(firstName()?`VICTREINA · ${firstName().toUpperCase()}`:'VICTREINA',W/2,y);
+  y+=34;
+  x.font=`700 ${ts}px ${D}`;x.fillStyle=fg;
+  for(const l of tl){y+=ts*.9;x.fillText(l,W/2,y)}
+  const dt=parseKey(data.k);
+  y+=18+40;x.font=`500 36px ${B}`;x.fillStyle=mu;x.fillText(`${WDN[dt.getDay()]}, ${fmtLong.format(dt)}`,W/2,y);
+  if(data.groups.length){
+    y+=30;x.font=`600 32px ${B}`;
+    const items=data.groups.map(g=>[g,x.measureText(g).width+34]);
+    const total=items.reduce((s,[,w])=>s+w,0)+(items.length-1)*28;
+    let px=W/2-total/2;x.textAlign='left';
+    for(const [g,w] of items){x.fillStyle=col(g);x.beginPath();x.arc(px+11,y+22,11,0,7);x.fill();x.fillStyle=fg;x.fillText(g,px+34,y+33);px+=w+28}
+    x.textAlign='center';y+=44;
+  }
+  y+=64;
+  const cw=(W-2*P)/3;let vsz=vs;
+  for(const [v,u] of stats){x.font=`700 ${vsz}px ${D}`;let wv=x.measureText(v).width;x.font=`700 ${Math.round(vsz*.38)}px ${D}`;wv+=u?x.measureText(u).width+8:0;if(wv>cw-20)vsz=Math.floor(vsz*(cw-20)/wv)}
+  stats.forEach(([v,u,l],i)=>{
+    const cx=P+cw*i+cw/2;
+    x.font=`600 28px ${B}`;x.fillStyle=mu;x.fillText(l,cx,y);
+    x.font=`700 ${vsz}px ${D}`;const vw=x.measureText(v).width;
+    x.font=`700 ${Math.round(vsz*.38)}px ${D}`;const uw=u?x.measureText(u).width+8:0;
+    const sx=cx-(vw+uw)/2;x.textAlign='left';
+    x.font=`700 ${vsz}px ${D}`;x.fillStyle=fg;x.fillText(v,sx,y+12+vs*.9);
+    if(u){x.font=`700 ${Math.round(vsz*.38)}px ${D}`;x.fillStyle=mu;x.fillText(u,sx+vw+8,y+12+vs*.9)}
+    x.textAlign='center';
   });
+  y+=12+vs;
+  if(prs){
+    y+=40;x.save();x.shadowColor='transparent';x.font=`700 30px ${B}`;
+    const t=`${prs} ${prs===1?'RECORDE':'RECORDES'} DE CARGA`,tw=x.measureText(t).width+56;
+    rr(x,W/2-tw/2,y,tw,56,28);x.fillStyle=okc;x.fill();x.fillStyle=dark?'#fff':'#0b0e14';x.fillText(t,W/2,y+39);x.restore();
+  }
   return await new Promise(ok=>c.toBlob(ok,'image/png'));
 }
 let shareBlob=null,shareUrl='';
 async function drawShare(){
   const s=ui.share;if(!s)return;
-  const data=sessionData(s.k);
-  const blob=await drawCard(data,s.fmt,s.theme);
+  const blob=await drawCard(sessionData(s.k),s.style);
   if(ui.share!==s)return;
   if(shareUrl)URL.revokeObjectURL(shareUrl);
   shareBlob=blob;shareUrl=URL.createObjectURL(blob);
   const img=document.getElementById('shareImg');if(img)img.src=shareUrl;
 }
+const canCopyImg=()=>!!(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write);
 function sheetShare(){
   const s=ui.share,d=S.days[s.k]||{logs:[]},m=durMin(d)||45;
   const canShare=!!(window.TREINO_HOSTED&&navigator.canShare&&navigator.canShare({files:[new File(['x'],'t.png',{type:'image/png'})]}));
+  const bg=s.style==='preto'?'#f1efe9':'#3b3f47';
   openSheet(`
-    <div class="sheethead"><div><div class="eyebrow">${WDN[parseKey(s.k).getDay()]} · ${ddmm(s.k)}</div><h2>Compartilhar treino</h2></div>${closeBtn()}</div>
-    <img id="shareImg" class="shareimg" alt="Prévia da imagem do treino" ${shareUrl&&s.drawn?`src="${shareUrl}"`:''}>
-    <div class="seg"><button class="${s.fmt==='story'?'on':''}" data-act="shareOpt" data-f="fmt" data-v="story">Stories</button><button class="${s.fmt==='feed'?'on':''}" data-act="shareOpt" data-f="fmt" data-v="feed">Feed</button></div>
-    <div class="seg seg3"><button class="${s.theme==='dark'?'on':''}" data-act="shareOpt" data-f="theme" data-v="dark">Escuro</button><button class="${s.theme==='light'?'on':''}" data-act="shareOpt" data-f="theme" data-v="light">Claro</button><button class="${s.theme==='clear'?'on':''}" data-act="shareOpt" data-f="theme" data-v="clear">Sem fundo</button></div>
-    ${s.theme==='clear'?'<p class="hint" style="margin:0">Sem fundo: cole a imagem por cima de uma foto sua nos Stories.</p>':''}
+    <div class="sheethead"><div><div class="eyebrow">${WDN[parseKey(s.k).getDay()]} · ${ddmm(s.k)}</div><h2>Adesivo do treino</h2></div>${closeBtn()}</div>
+    <div class="stickerbox" style="background:${bg}"><img id="shareImg" alt="Prévia do adesivo do treino" ${shareUrl&&s.drawn?`src="${shareUrl}"`:''}></div>
+    <div class="seg seg3"><button class="${s.style==='branco'?'on':''}" data-act="shareOpt" data-f="style" data-v="branco">Texto branco</button><button class="${s.style==='preto'?'on':''}" data-act="shareOpt" data-f="style" data-v="preto">Texto preto</button><button class="${s.style==='cartao'?'on':''}" data-act="shareOpt" data-f="style" data-v="cartao">Cartão</button></div>
     ${stepper('dur','Tempo de treino','em minutos',m,5)}
-    ${canShare?'<button class="primary" data-act="shareImg">Compartilhar no Instagram</button><button class="ghost" data-act="saveImg">Salvar imagem</button>':'<button class="primary" data-act="saveImg">Salvar imagem</button>'}
-    <p class="hint" style="margin:0">Depois é só abrir o Instagram e postar a imagem salva.</p>`);
+    ${canCopyImg()&&window.TREINO_HOSTED?'<button class="primary" data-act="copyImg">Copiar adesivo</button>':''}
+    ${canShare?`<button class="${canCopyImg()?'ghost':'primary'}" data-act="shareImg">Compartilhar</button>`:''}
+    <button class="ghost" data-act="saveImg">Baixar PNG sem fundo</button>
+    <p class="hint" style="margin:0;text-align:left"><b>Como usar no Stories:</b> toque em <b>Copiar adesivo</b>, abra o Instagram, escolha sua foto do Stories, toque na tela e depois em <b>Colar</b>. Ou baixe o PNG e adicione pelo adesivo de galeria.</p>`);
   s.drawn=true;drawShare();
 }
-function openShare(k){ui.share={k,fmt:ui.share?.fmt||'story',theme:ui.share?.theme||'dark'};shareUrl&&URL.revokeObjectURL(shareUrl);shareUrl='';sheetShare()}
+function openShare(k){ui.share={k,style:ui.share?.style||'branco'};shareUrl&&URL.revokeObjectURL(shareUrl);shareUrl='';sheetShare()}
 function setShareDur(){const s=ui.share,v=Math.max(1,Math.round(readNum('dur')));const d=dayOf(s.k);if(d.dur!==v){d.dur=v;persistDay(s.k);drawShare()}}
-const shareName=()=>`victreina-${ui.share.k}${ui.share.fmt==='feed'?'-feed':''}.png`;
+const shareName=()=>`victreina-${ui.share.k}.png`;
+async function copyShare(){
+  if(!shareBlob)return;
+  try{await navigator.clipboard.write([new ClipboardItem({'image/png':shareBlob})]);toast('Adesivo copiado! Agora é só colar no Stories.')}
+  catch(e){toast('Não deu pra copiar. Use Salvar imagem.')}
+}
 async function saveShare(){
   if(!shareBlob)return;
   if(!window.TREINO_HOSTED){
@@ -719,7 +736,7 @@ async function saveShare(){
     return;
   }
   const a=document.createElement('a');a.href=shareUrl;a.download=shareName();document.body.appendChild(a);a.click();a.remove();
-  toast('Imagem salva. Se não aparecer, toque e segure na imagem.');
+  toast('PNG salvo. Se não aparecer, toque e segure no adesivo.');
 }
 async function shareShare(){
   if(!shareBlob)return;
@@ -731,7 +748,8 @@ async function shareShare(){
 const app=document.getElementById('app');
 function render(){
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===ui.tab));
-  app.innerHTML=ui.tab==='treino'?viewHoje():ui.tab==='plano'?viewPlano():ui.tab==='freq'?viewFreq():viewProg();
+  app.innerHTML=ui.tab==='treino'?viewHoje():ui.tab==='plano'?viewPlano():ui.tab==='freq'?viewFreq():ui.tab==='perfil'?viewPerfil():viewProg();
+  tabAvatar();
 }
 const GICON='<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
 function acct(){
@@ -913,6 +931,81 @@ function chart(pts){
   </svg>`;
 }
 
+/* ================= Perfil ================= */
+const displayName=()=>S.nick||ui.name||'';
+const firstName=()=>displayName().trim().split(/\s+/)[0]||'';
+function avatarHtml(cls){
+  if(ui.photo)return `<img class="${cls}" src="${esc(ui.photo)}" alt="" referrerpolicy="no-referrer">`;
+  const n=displayName();
+  return `<span class="${cls}">${n?esc(n.trim()[0].toUpperCase()):'🙂'}</span>`;
+}
+function tabAvatar(){
+  const t=document.getElementById('tabPerfil');if(!t)return;
+  const has=t.querySelector('img');
+  if(ui.photo&&!has){t.innerHTML=`<img class="av" src="${esc(ui.photo)}" alt="" referrerpolicy="no-referrer">Perfil`}
+  else if(!ui.photo&&has){t.innerHTML='<svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20c1.4-3.6 4.2-5.4 7.5-5.4s6.1 1.8 7.5 5.4"/></svg>Perfil'}
+}
+function profileStats(){
+  const act=Object.keys(S.days).filter(k=>{const d=S.days[k];return d.checked||d.logs.length}).sort();
+  const first=act[0]||null;
+  let vol=0,mins=0,prs=0;
+  for(const k of act){const d=S.days[k];for(const l of d.logs)if(l.w!=null)vol+=l.w*l.r*l.s;const m=durMin(d);if(m)mins+=m}
+  // recordes: cada vez que a carga máxima de um exercício superou a anterior
+  const best=[];
+  for(const e of S.exercises){
+    if(kindOf(e)!=='carga')continue;
+    const ss=sessions(e.id);if(!ss.length)continue;
+    let run=0,bk=ss[0].k;
+    for(const s of ss){if(s.w>run){if(run>0)prs++;run=s.w;bk=s.k}}
+    best.push({e,w:run,k:bk});
+  }
+  best.sort((a,b)=>b.k.localeCompare(a.k)||b.w-a.w);
+  // sequência de semanas
+  const ws=weekStart(today());let cur=0,w=ws;if(weekCount(w)===0)w=addDays(w,-7);
+  while(weekCount(w)>0){cur++;w=addDays(w,-7)}
+  let bestRun=0,run=0;
+  if(first){for(let s=weekStart(first);s<=ws;s=addDays(s,7)){if(weekCount(s)>0){run++;bestRun=Math.max(bestRun,run)}else run=0}}
+  // grupos mais treinados (em dias)
+  const gcount={};for(const k of act)for(const g of groupsOn(k))gcount[g]=(gcount[g]||0)+1;
+  const groups=Object.entries(gcount).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  return {first,days:checkedKeys().length,vol,mins,prs,best:best.slice(0,6),cur,bestRun,groups};
+}
+function viewPerfil(){
+  const st=profileStats(),name=displayName();
+  const since=st.first?new Intl.DateTimeFormat('pt-BR',{month:'long',year:'numeric'}).format(parseKey(st.first)):'';
+  const volTxt=st.vol>=10000?`${fmt(st.vol/1000)}<small> t</small>`:`${Math.round(st.vol).toLocaleString('pt-BR')}<small> kg</small>`;
+  const hrs=st.mins>=60?`${fmt(st.mins/60)}<small> h</small>`:`${st.mins}<small> min</small>`;
+  const maxG=st.groups.length?st.groups[0][1]:1;
+  return `
+  <div class="profhead">
+    ${avatarHtml('avatar')}
+    <h1>${name?esc(name):'Seu perfil'}</h1>
+    ${ui.email?`<div class="since">${esc(ui.email)}</div>`:''}
+    <div class="since">${since?`No victreina desde ${esc(since)}`:'Seu primeiro treino vai aparecer aqui'}</div>
+    <button class="link" data-act="nick">${S.nick?'Mudar como quero ser chamada':'Escolher como quero ser chamada'}</button>
+  </div>
+  <div class="stats">
+    <div class="stat"><span class="v num">${st.days}</span><span class="l">Dias na academia</span></div>
+    <div class="stat"><span class="v num">${st.cur}<small> sem.</small></span><span class="l">Sequência atual</span></div>
+    <div class="stat"><span class="v num">${volTxt}</span><span class="l">Levantados no total</span></div>
+    <div class="stat"><span class="v num">${hrs}</span><span class="l">Tempo treinando</span></div>
+    <div class="stat"><span class="v num ${st.prs?'up':''}">${st.prs}</span><span class="l">Recordes batidos</span></div>
+    <div class="stat"><span class="v num">${st.bestRun}<small> sem.</small></span><span class="l">Maior sequência</span></div>
+  </div>
+  ${st.groups.length?`<div class="section"><h3>Grupos mais treinados</h3><div class="card"><div class="gbars">${st.groups.map(([g,n])=>`<div class="gbar" style="${gc(g)}"><span>${g}</span><span class="tr"><i style="width:${Math.max(6,Math.round(n/maxG*100))}%"></i></span><span class="n">${n}</span></div>`).join('')}</div></div></div>`:''}
+  ${st.best.length?`<div class="section"><h3>Seus recordes</h3><div class="list recs">${st.best.map(b=>`<div class="item" style="${gc(b.e.group)}">${pic(b.e)}<div class="main"><div class="name">${esc(b.e.name)}</div><div class="sub num">${ddmm(b.k)}</div></div><span class="kg">${fmt(b.w)} kg</span></div>`).join('')}</div></div>`:''}
+  ${!st.first?`<div class="empty">Registre seu primeiro treino na aba Hoje e suas conquistas aparecem aqui.</div>`:''}
+  <div class="section"><h3>Conta</h3><div class="card">${acct()}</div></div>`;
+}
+function sheetNick(){
+  openSheet(`
+    <div class="sheethead"><div><h2>Como quer ser chamada?</h2></div>${closeBtn()}</div>
+    <div class="field"><label for="nickIn">Nome ou apelido</label><input type="text" id="nickIn" value="${esc(S.nick||ui.name||'')}" placeholder="Ex.: Vic" autocomplete="off" maxlength="30"></div>
+    <p class="hint" style="margin:0">Aparece no seu perfil e na imagem que você posta no Instagram.</p>
+    <button class="primary" data-act="saveNick">Salvar</button>`);
+  setTimeout(()=>{const i=document.getElementById('nickIn');i&&i.focus()},60);
+}
+
 function viewProg(){
   const logged=S.exercises.filter(e=>kindOf(e)==='carga'&&sessions(e.id).length);
   const head=`<div class="section"><div class="eyebrow">Progressão de carga</div><h1>Sua evolução</h1></div>`;
@@ -1070,6 +1163,8 @@ document.addEventListener('click',ev=>{
   if(a==='group'){ui.group=b.dataset.g;render();return}
   if(a==='photo'){const [x,w,i]=ui.logCtx||[b.dataset.id];return pickPhoto(b.dataset.id,()=>sheetLog(x,w,i))}
   if(a==='unphoto'){const ex=b.dataset.id;delete PH[ex];persistPhoto(ex);render();const [x,w,i]=ui.logCtx||[ex];sheetLog(x,w,i);toast('Voltou ao desenho');return}
+  if(a==='nick')return sheetNick();
+  if(a==='saveNick'){S.nick=document.getElementById('nickIn').value.trim().slice(0,30);persistProfile();closeSheet();render();toast('Nome salvo');return}
   if(a==='tick'){
     const k=ui.date,ex=b.dataset.id,on=!isDone(k,ex);setDone(k,ex,on);persistDay(k);render();
     if(on&&navigator.vibrate)try{navigator.vibrate(12)}catch(e){}
@@ -1093,6 +1188,7 @@ document.addEventListener('click',ev=>{
   if(a==='shareOpt'){ui.share[b.dataset.f]=b.dataset.v;return sheetShare()}
   if(a==='saveImg')return saveShare();
   if(a==='shareImg')return shareShare();
+  if(a==='copyImg')return copyShare();
   if(a==='save'){
     const ex=b.dataset.id,e=exById(ex),kind=kindOf(e);let log;
     if(kind==='tempo'){const m=Math.round(readNum('m'));if(!m){toast('Informe quantos minutos você fez');return}log={id:newId(),ex,min:m,t:Date.now()}}
