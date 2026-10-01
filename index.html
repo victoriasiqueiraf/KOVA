@@ -468,13 +468,6 @@ select,input[type=text]{border:0;background:var(--surface);border-radius:14px}
 .wkstrip .fut{opacity:.45}
 .wkstrip b.ph{background-size:cover;background-position:center;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.85);box-shadow:0 0 0 2px var(--accent)}
 /* Dia com foto: a miniatura vence o fundo laranja de presença (o atalho background apagava o tamanho e a posição). */
-.callg{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:.8rem;color:var(--muted)}
-.callg div{display:flex;align-items:center;gap:8px;min-width:0}
-.callg i{flex:none;width:22px;height:22px;border-radius:7px;background:var(--surface-2);display:flex;align-items:flex-end;justify-content:center;gap:2px;padding-bottom:4px}
-.callg .lg-on{background:var(--accent)}
-.callg .lg-dots b{width:5px;height:5px;border-radius:50%;background:var(--gc)}
-.callg .lg-act{background:none;border:2px dotted var(--accent)}
-.callg .lg-ph{background:linear-gradient(135deg,#6b7a8f,#c9a27e)}
 .rank .pos.md{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.85rem;font-weight:800;color:#1a1408}
 .rank .pos.ouro{background:linear-gradient(135deg,#ffd76a,#e0a526)}
 .rank .pos.prata{background:linear-gradient(135deg,#eef0f3,#a9b0bb)}
@@ -2250,13 +2243,6 @@ function viewFreq(){
       <button class="iconbtn" data-act="month" data-n="1" aria-label="Próximo mês" ${isCur?'disabled':''}>›</button>
     </div>
     <div class="grid7">${['D','S','T','Q','Q','S','S'].map(x=>`<div class="wd">${x}</div>`).join('')}${cells}</div>
-    <div class="callg">
-      <div><i class="lg-on"></i>Treinou</div>
-      <div><i class="lg-dots"><b style="${gc('Costas')}"></b><b style="${gc('Bíceps')}"></b><b style="${gc('Glúteos')}"></b></i>Músculos do dia</div>
-      <div><i class="lg-act"></i>Outra atividade</div>
-      <div><i class="lg-ph"></i>Tem foto</div>
-    </div>
-    <p class="hint" style="margin:12px 0 0;text-align:center">Toque num dia pra marcar presença ou ver a foto.</p>
   </div>
   ${(()=>{const acts=Object.keys(S.days).filter(k=>k.startsWith(prefix)).flatMap(k=>S.days[k].acts||[]);if(!acts.length)return '';
     const mins=acts.reduce((s,a)=>s+(a.min||0),0),byType={};for(const a of acts){const n=actName(a);byType[n]=(byType[n]||0)+1}
