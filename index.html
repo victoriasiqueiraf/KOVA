@@ -468,6 +468,7 @@ select,input[type=text]{border:0;background:var(--surface);border-radius:14px}
 .wkstrip .fut{opacity:.45}
 .wkstrip b.ph{background-size:cover;background-position:center;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.85);box-shadow:0 0 0 2px var(--accent)}
 /* Dia com foto: a miniatura vence o fundo laranja de presença (o atalho background apagava o tamanho e a posição). */
+.day.on .dots i{box-shadow:0 0 0 1.5px rgba(0,0,0,.35)}
 .day.ph,.day.ph.on,.wkstrip .on b.ph{background-color:var(--surface-2);background-size:cover;background-position:center;background-repeat:no-repeat;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.85)}
 .datebar h1{font-size:1.25rem}
 .datebar .eyebrow{font-size:.68rem}
@@ -974,7 +975,7 @@ const bestOf=exId=>{let b=0;for(const k in S.days)for(const l of S.days[k].logs)
 const checkedKeys=()=>Object.keys(S.days).filter(k=>S.days[k].checked);
 const weekStart=k=>addDays(k,-parseKey(k).getDay());
 function weekCount(ws){const we=addDays(ws,6);return checkedKeys().filter(k=>k>=ws&&k<=we).length}
-function groupsOn(k){const s=new Set();for(const l of (S.days[k]?.logs||[])){const e=exById(l.ex);if(e)s.add(e.group)}return [...s]}
+function groupsOn(k){const d=S.days[k],s=new Set();for(const id of [...(d?.logs||[]).map(l=>l.ex),...(d?.done||[])]){const e=exById(id);if(e)s.add(e.group)}return [...s]}
 const incFor=w=>w<10?1:2.5;
 
 /* ================= Cronômetro do treino ================= */
