@@ -1,4 +1,4 @@
-# victreina
+# KOVA
 
 App de academia que funciona no navegador e pode ser instalado no celular:
 
@@ -15,17 +15,17 @@ Sem login, os dados ficam salvos no próprio celular e continuam lá quando voc�
 ## 1. Publicar no GitHub Pages (grátis)
 
 1. Crie uma conta em https://github.com, se ainda não tiver.
-2. Clique em **New repository**, dê o nome `victreina`, deixe **Public** e clique em **Create repository**.
+2. Clique em **New repository**, dê o nome `kova`, deixe **Public** e clique em **Create repository**.
 3. Na página do repositório, clique em **uploading an existing file** e arraste **todos os arquivos desta pasta** (menos a pasta `.git`, se aparecer). Clique em **Commit changes**.
 4. Vá em **Settings → Pages**. Em *Branch*, escolha `main` e a pasta `/ (root)`, e clique em **Save**.
-5. Depois de 1–2 minutos, o app fica disponível em `https://SEU-USUARIO.github.io/victreina/`.
+5. Depois de 1–2 minutos, o app fica disponível em `https://SEU-USUARIO.github.io/kova/`.
 
 Nesse ponto o app já funciona e salva no celular. Para salvar na nuvem com Google, siga o passo 2.
 
 ## 2. Ligar o login com Google (Firebase, grátis)
 
 1. Acesse https://console.firebase.google.com e entre com sua conta Google.
-2. Clique em **Criar um projeto** (ex.: `victreina`). O Google Analytics pode ficar desligado.
+2. Clique em **Criar um projeto** (ex.: `kova`). O Google Analytics pode ficar desligado.
 3. **Autenticação:** no menu, vá em **Criação → Authentication → Vamos começar → Google**, ative e salve.
 4. Ainda em Authentication, abra **Configurações → Domínios autorizados → Adicionar domínio** e coloque `SEU-USUARIO.github.io`.
 5. **Banco de dados:** vá em **Criação → Firestore Database → Criar banco de dados**. Escolha um local (ex.: `southamerica-east1`, São Paulo) e o **modo de produção**.

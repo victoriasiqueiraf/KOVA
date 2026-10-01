@@ -1,11 +1,11 @@
 {
-  "name": "victreina",
-  "short_name": "victreina",
+  "name": "KOVA",
+  "short_name": "KOVA",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#eceff3",
-  "theme_color": "#2350d8",
+  "background_color": "#0a0a0b",
+  "theme_color": "#0a0a0b",
   "lang": "pt-BR",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
