@@ -466,6 +466,9 @@ select,input[type=text]{border:0;background:var(--surface);border-radius:14px}
 .wkstrip .on b{background:var(--accent);color:var(--accent-ink)}
 .wkstrip .sel{box-shadow:inset 0 0 0 2px var(--accent)}
 .wkstrip .fut{opacity:.45}
+.wkstrip b.ph{background-size:cover;background-position:center;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.85);box-shadow:0 0 0 2px var(--accent)}
+/* Dia com foto: a miniatura vence o fundo laranja de presença (o atalho background apagava o tamanho e a posição). */
+.day.ph,.day.ph.on,.wkstrip .on b.ph{background-color:var(--surface-2);background-size:cover;background-position:center;background-repeat:no-repeat;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.85)}
 .datebar h1{font-size:1.25rem}
 .datebar .eyebrow{font-size:.68rem}
 
@@ -1935,7 +1938,7 @@ function todayCard(k,w,done2){
 }
 function weekStrip(k){
   const ws=weekStart(k),t=today();
-  return `<div class="wkstrip">${[0,1,2,3,4,5,6].map(i=>{const d=addDays(ws,i),on=S.days[d]?.checked,fut=d>t;return `<button class="${on?'on':''} ${d===k?'sel':''} ${fut?'fut':''}" data-act="goDay" data-k="${d}" ${fut?'disabled':''} aria-label="${WDN[i]}, ${ddmm(d)}"><span>${WDS[i][0]}</span><b class="num">${+d.slice(8)}</b></button>`}).join('')}</div>`;
+  return `<div class="wkstrip">${[0,1,2,3,4,5,6].map(i=>{const d=addDays(ws,i),on=S.days[d]?.checked,fut=d>t;return `<button class="${on?'on':''} ${d===k?'sel':''} ${fut?'fut':''}" data-act="goDay" data-k="${d}" ${fut?'disabled':''} aria-label="${WDN[i]}, ${ddmm(d)}"><span>${WDS[i][0]}</span><b class="num ${DP[d]?'ph':''}" ${DP[d]?`style="background-image:url('${DP[d]}')"`:''}>${+d.slice(8)}</b></button>`}).join('')}</div>`;
 }
 
 /* ================= XP (aba) ================= */
