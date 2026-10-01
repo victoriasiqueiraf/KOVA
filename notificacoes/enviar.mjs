@@ -3,7 +3,18 @@
 // Precisa do segredo FIREBASE_SERVICE_ACCOUNT no GitHub (a chave da conta de serviço do Firebase).
 import admin from 'firebase-admin';
 
-admin.initializeApp({ credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) });
+// Lê a chave mesmo se ela foi colada com o começo ou o fim cortados (só precisa destes 3 campos).
+function chave(txt = '') {
+  try { return JSON.parse(txt); } catch (e) {}
+  const campo = n => (txt.match(new RegExp(`"?${n}"?\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"`)) || [])[1];
+  const k = { project_id: campo('project_id'), client_email: campo('client_email'), private_key: (campo('private_key') || '').replace(/\\n/g, '\n') };
+  if (!k.project_id || !k.client_email || !k.private_key.includes('PRIVATE KEY')) {
+    console.error('A chave FIREBASE_SERVICE_ACCOUNT está incompleta. Cole o arquivo .json inteiro, do { até o }.');
+    process.exit(1);
+  }
+  return k;
+}
+admin.initializeApp({ credential: admin.credential.cert(chave(process.env.FIREBASE_SERVICE_ACCOUNT)) });
 const db = admin.firestore();
 const now = Date.now();
 const HORA = 3600e3;
