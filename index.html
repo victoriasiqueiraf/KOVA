@@ -1070,93 +1070,95 @@ async function drawCard(data,style){
     return await new Promise(ok=>c.toBlob(ok,'image/png'));
   }
   try{await Promise.all(['800 100px "Lexend"','700 40px "Lexend"','600 40px "Lexend"','500 40px "Lexend"'].map(f=>document.fonts.load(f)))}catch(e){}
-  // Layout em blocos, tudo alinhado na mesma margem esquerda
-  const W=1080,P=56,GAP=22,R=34,D='"Lexend",system-ui,sans-serif',B='"Lexend",system-ui,sans-serif';
+  // Layout KOVA: blocos arredondados alinhados na mesma margem, detalhes em laranja
+  const W=1080,P=56,GAP=22,R=34,D='"Lexend",system-ui,sans-serif',B=D;
   const dark=style==='preto',card=style==='cartao',inner=W-2*P;
-  const fg=dark?'#14171c':'#ffffff',mu=dark?'rgba(20,23,28,.66)':'rgba(255,255,255,.8)';
-  const tile=card?'#232833':dark?'rgba(20,23,28,.07)':'rgba(255,255,255,.16)';
-  const pal=IMG_COLORS[dark?'light':'dark'],col=g=>pal[(GROUPS.find(x=>x.n===g)||GROUPS[9]).v];
-  const okc=dark?'#1b7f45':'#50c683';
+  const A=dark?'#f25c05':'#ff6b1a',INK=dark?'#ffffff':'#0a0a0b';
+  const fg=dark?'#141414':'#ffffff',mu=dark?'rgba(20,20,20,.62)':'rgba(255,255,255,.78)';
+  const tile=card?'#1f1f22':dark?'rgba(20,20,20,.07)':'rgba(255,255,255,.16)';
+  const X=XP(),xpDay=data.stats?0:((X.gains||{})[data.k]||0);
   const m=document.createElement('canvas').getContext('2d');
-  // medidas
-  const ts=120;m.font=`800 ${ts}px ${D}`;
+  const ts=118;m.font=`800 ${ts}px ${D}`;
   const tl=wrapLines(m,data.title.toUpperCase(),inner,2);
   m.font=`600 32px ${B}`;
+  const lvTxt=`NV ${X.level} · ${X.tier.toUpperCase()}`;
+  const chips=[[lvTxt,1],...data.groups.map(g=>[g,0])];
   const ph=58,pgap=12,pillRows=[];let row=[],rw=0;
-  for(const g of data.groups){const tw=m.measureText(g).width+72;if(row.length&&rw+tw>inner){pillRows.push(row);row=[];rw=0}row.push([g,tw]);rw+=tw+pgap}
+  for(const [t,lv] of chips){m.font=lv?`800 28px ${B}`:`600 32px ${B}`;const tw=m.measureText(t).width+(lv?48:72);if(row.length&&rw+tw>inner){pillRows.push(row);row=[];rw=0}row.push([t,tw,lv]);rw+=tw+pgap}
   if(row.length)pillRows.push(row);
   const prs=data.rows.filter(r=>r.pr).length;
-  const top=card?60:20,headH=40,statH=210,weekH=196,prH=64;
-  const H=top+headH+26+tl.length*ts*.88+24+(pillRows.length?pillRows.length*(ph+pgap)-pgap+GAP:0)+statH+GAP+weekH+(prs?GAP+prH:0)+(card?60:20);
+  const top=card?64:20,headH=56,statH=210,weekH=196,prH=64;
+  const H=top+headH+24+tl.length*ts*.9+26+pillRows.length*(ph+pgap)-pgap+GAP+statH+GAP+weekH+(prs?GAP+prH:0)+(card?64:20);
   const c=document.createElement('canvas');c.width=W;c.height=Math.ceil(H);const x=c.getContext('2d');
   if(card){
-    rr(x,0,0,W,c.height,56);x.fillStyle='#14171c';x.fill();
-    x.save();rr(x,0,0,W,c.height,56);x.clip();
-    const gs=data.groups.length?data.groups:['Abdômen'];gs.forEach((g,i)=>{x.fillStyle=col(g);x.fillRect(i*W/gs.length,0,W/gs.length+1,14)});
-    x.restore();
+    rr(x,0,0,W,c.height,60);x.fillStyle='#0a0a0b';x.fill();
+    x.save();rr(x,0,0,W,c.height,60);x.clip();x.fillStyle=A;x.fillRect(0,0,W,12);x.restore();
   }
   const shadowOn=()=>{if(style==='branco'){x.shadowColor='rgba(0,0,0,.35)';x.shadowBlur=16;x.shadowOffsetY=2}};
   const shadowOff=()=>{x.shadowColor='transparent';x.shadowBlur=0;x.shadowOffsetY=0};
   const block=(bx,by,bw,bh,fill)=>{shadowOff();rr(x,bx,by,bw,bh,R);x.fillStyle=fill||tile;x.fill();shadowOn()};
   shadowOn();x.textBaseline='alphabetic';
   let y=top;
-  // cabeçalho: app · nome | data
+  // cabeçalho: K + KOVA · nome | data
   const dt=parseKey(data.k);
-  x.font=`700 30px ${B}`;x.fillStyle=mu;x.textAlign='left';
-  x.fillText(firstName()?`KOVA · ${firstName().toUpperCase()}`:'KOVA',P,y+32);
-  x.font=`500 30px ${B}`;x.textAlign='right';x.fillText(`${WDS[dt.getDay()]}, ${ddmm(data.k)}`,W-P,y+32);x.textAlign='left';
-  y+=headH+26;
+  {const s=48/400;x.save();x.translate(P-30*s,y+4-16*s);x.scale(s,s);x.fillStyle=A;x.strokeStyle=A;x.lineWidth=10;x.lineJoin='round';
+   for(const d of ['M161 27L159 176L78 256L124 323L124 336L41 406L41 108Z','M116 266L321 60L482 58L360 174Q346 186 318 186L300 186L158 311Z','M245 272L281 243L349 243L467 373L336 376Z']){const pth=new Path2D(d);x.fill(pth);x.stroke(pth)}
+   x.restore();}
+  x.font=`800 34px ${B}`;x.fillStyle=fg;x.textAlign='left';
+  try{x.letterSpacing='5px'}catch(e){}
+  x.fillText('KOVA',P+70,y+42);const kw=x.measureText('KOVA').width;
+  try{x.letterSpacing='0px'}catch(e){}
+  if(firstName()){x.font=`600 30px ${B}`;x.fillStyle=mu;x.fillText(`· ${firstName().toUpperCase()}`,P+70+kw+14,y+41)}
+  x.font=`500 30px ${B}`;x.fillStyle=mu;x.textAlign='right';x.fillText(`${WDS[dt.getDay()]}, ${ddmm(data.k)}`,W-P,y+41);x.textAlign='left';
+  y+=headH+24;
   // título
   x.font=`800 ${ts}px ${D}`;x.fillStyle=fg;
-  for(const l of tl){y+=ts*.88;x.fillText(l,P-4,y)}
-  y+=24;
-  // grupos em pílulas
-  if(pillRows.length){
-    x.font=`600 32px ${B}`;
-    for(const r of pillRows){
-      let px=P;
-      for(const [g,tw] of r){
-        shadowOff();rr(x,px,y,tw,ph,ph/2);x.fillStyle=card?'#232833':tile;x.fill();
-        x.fillStyle=col(g);x.beginPath();x.arc(px+30,y+ph/2,10,0,7);x.fill();shadowOn();
-        x.fillStyle=fg;x.fillText(g,px+50,y+ph/2+11);px+=tw+pgap;
-      }
-      y+=ph+pgap;
+  for(const l of tl){y+=ts*.9;x.fillText(l,P-4,y)}
+  y+=26;
+  // nível + grupos em pílulas
+  for(const r of pillRows){
+    let px=P;
+    for(const [t,tw,lv] of r){
+      shadowOff();rr(x,px,y,tw,ph,ph/2);x.fillStyle=lv?A:tile;x.fill();
+      if(lv){x.font=`800 28px ${B}`;x.fillStyle=INK;x.fillText(t,px+24,y+ph/2+10)}
+      else{x.fillStyle=A;x.beginPath();x.arc(px+30,y+ph/2,9,0,7);x.fill();shadowOn();x.font=`600 32px ${B}`;x.fillStyle=fg;x.fillText(t,px+50,y+ph/2+11)}
+      shadowOn();px+=tw+pgap;
     }
-    y+=GAP-pgap;
+    y+=ph+pgap;
   }
-  // blocos de números
-  const stats=data.stats?data.stats.slice():[['TEMPO',data.dur?String(data.dur):'—',data.dur?'min':''],['EXERCÍCIOS',String(data.rows.length),'']];
-  if(!data.stats&&showVol())stats.push(['VOLUME',data.volume?Math.round(data.volume).toLocaleString('pt-BR'):'—',data.volume?'kg':'']);
+  y+=GAP-pgap;
+  // blocos de números (XP ganho no treino sempre aparece)
+  const stats=data.stats?data.stats.slice():[['TEMPO',data.dur?String(data.dur):'—',data.dur?'min':''],['EXERCÍCIOS',String(data.rows.length),''],['XP',xpDay?`+${xpDay}`:'—','',1]];
+  if(!data.stats&&showVol())stats.splice(2,0,['VOLUME',data.volume?Math.round(data.volume).toLocaleString('pt-BR'):'—',data.volume?'kg':'']);
   const sw=(inner-GAP*(stats.length-1))/stats.length;
-  // mesmo tamanho de número em todos os blocos, diminuindo se algum não couber
-  let vs=118;
-  for(const [,v,u] of stats){x.font=`700 ${vs}px ${D}`;let w=x.measureText(v).width;x.font=`700 ${Math.round(vs*.37)}px ${D}`;w+=u?x.measureText(u).width+10:0;if(w>sw-56)vs=Math.floor(vs*(sw-56)/w)}
-  stats.forEach(([l,v,u],i)=>{
+  let vs=112;
+  for(const [,v,u] of stats){x.font=`800 ${vs}px ${D}`;let w=x.measureText(v).width;x.font=`700 ${Math.round(vs*.36)}px ${D}`;w+=u?x.measureText(u).width+10:0;if(w>sw-52)vs=Math.floor(vs*(sw-52)/w)}
+  stats.forEach(([l,v,u,hi],i)=>{
     const sx=P+i*(sw+GAP);block(sx,y,sw,statH);
-    x.font=`700 28px ${B}`;x.fillStyle=mu;x.fillText(l,sx+28,y+56);
-    x.font=`700 ${vs}px ${D}`;x.fillStyle=fg;x.fillText(v,sx+26,y+176);
-    if(u){const vw=x.measureText(v).width;x.font=`700 ${Math.round(vs*.37)}px ${D}`;x.fillStyle=mu;x.fillText(u,sx+26+vw+10,y+176)}
+    x.font=`700 26px ${B}`;x.fillStyle=mu;x.fillText(l,sx+26,y+54);
+    x.font=`800 ${vs}px ${D}`;x.fillStyle=hi?A:fg;x.fillText(v,sx+24,y+174);
+    if(u){const vw=x.measureText(v).width;x.font=`700 ${Math.round(vs*.36)}px ${D}`;x.fillStyle=mu;x.fillText(u,sx+24+vw+10,y+174)}
   });
   y+=statH+GAP;
-  // bloco da semana
+  // semana
   block(P,y,inner,weekH);
-  x.font=`700 28px ${B}`;x.fillStyle=mu;x.fillText('ESTA SEMANA',P+32,y+54);
-  x.font=`700 28px ${B}`;x.fillStyle=fg;x.textAlign='right';
+  x.font=`700 26px ${B}`;x.fillStyle=mu;x.fillText('ESTA SEMANA',P+32,y+54);
+  x.font=`800 28px ${B}`;x.fillStyle=A;x.textAlign='right';
   x.fillText(`${data.weekCount} de ${S.goal} ${S.goal===1?'dia':'dias'}`,P+inner-32,y+54);x.textAlign='center';
   const r0=34,span=inner-64,todayIdx=dt.getDay();
   ['D','S','T','Q','Q','S','S'].forEach((l,i)=>{
     const cx=P+32+r0+i*((span-2*r0)/6),cy=y+128,on=data.week[i];
     shadowOff();x.beginPath();x.arc(cx,cy,r0,0,7);
-    if(on){x.fillStyle=fg;x.fill()}else{x.lineWidth=3;x.strokeStyle=mu;x.globalAlpha=.55;x.stroke();x.globalAlpha=1}
-    if(i===todayIdx){x.beginPath();x.arc(cx,cy,r0+8,0,7);x.lineWidth=3;x.strokeStyle=fg;x.stroke()}
-    shadowOn();x.font=`700 28px ${B}`;x.fillStyle=on?(dark?'#ffffff':'#14171c'):mu;x.fillText(l,cx,cy+10);
+    if(on){x.fillStyle=A;x.fill()}else{x.lineWidth=3;x.strokeStyle=mu;x.globalAlpha=.5;x.stroke();x.globalAlpha=1}
+    if(i===todayIdx){x.beginPath();x.arc(cx,cy,r0+8,0,7);x.lineWidth=3;x.strokeStyle=A;x.stroke()}
+    shadowOn();x.font=`800 28px ${B}`;x.fillStyle=on?INK:mu;x.fillText(l,cx,cy+10);
   });
   x.textAlign='left';y+=weekH;
   // recorde
   if(prs){
     y+=GAP;shadowOff();
-    rr(x,P,y,inner,prH,prH/2);x.fillStyle=okc;x.fill();
-    x.font=`700 30px ${B}`;x.fillStyle=dark?'#fff':'#0b0e14';x.textAlign='center';
+    rr(x,P,y,inner,prH,prH/2);x.fillStyle=A;x.fill();
+    x.font=`800 30px ${B}`;x.fillStyle=INK;x.textAlign='center';
     x.fillText(`${prs} ${prs===1?'RECORDE':'RECORDES'} DE CARGA HOJE`,W/2,y+42);x.textAlign='left';
   }
   return await new Promise(ok=>c.toBlob(ok,'image/png'));
@@ -1690,7 +1692,7 @@ function computeXP(){
     for(const a of d.acts||[]){const gr=actInfo(a.type).g;areas[gr]=(areas[gr]||0)+20;g+=20}
     gain[k]=g;
   }
-  let level=L0,into=0,total=0,idle=0,lossWin=0,lost=0,todayGain=0;
+  let level=L0,into=0,total=0,idle=0,lossWin=0,lost=0,todayGain=0;const gains={};
   const t=today();let start=keys.find(isActiveDay)||t;if(qd&&qd<start)start=qd;
   for(let k=start;k<=t;k=addDays(k,1)){
     if(isActiveDay(k)){
@@ -1698,7 +1700,7 @@ function computeXP(){
       if(qd&&k>=qd&&idle>=7&&!inPause(k))g+=50;
       if(q&&L0===1&&qd&&k>=qd&&k<addDays(qd,28))g=Math.round(g*1.5);
       into+=g;total+=g;while(into>=needFor(level)){into-=needFor(level);level++}
-      idle=0;lossWin=0;lost=0;if(k===t)todayGain=g;
+      idle=0;lossWin=0;lost=0;gains[k]=g;if(k===t)todayGain=g;
     }else{
       idle++;
       if(qd&&k>=qd&&idle>7&&!inPause(k)){
@@ -1707,7 +1709,7 @@ function computeXP(){
       }
     }
   }
-  return {level,into,need:needFor(level),total,areas,prs,idle,lost,todayGain,tier:tierOf(level)};
+  return {level,into,need:needFor(level),total,areas,prs,idle,lost,todayGain,gains,tier:tierOf(level)};
 }
 let _xp=null;const XP=()=>_xp||(_xp=computeXP());
 
