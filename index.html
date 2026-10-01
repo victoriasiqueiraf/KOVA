@@ -468,6 +468,21 @@ select,input[type=text]{border:0;background:var(--surface);border-radius:14px}
 .wkstrip .fut{opacity:.45}
 .wkstrip b.ph{background-size:cover;background-position:center;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.85);box-shadow:0 0 0 2px var(--accent)}
 /* Dia com foto: a miniatura vence o fundo laranja de presença (o atalho background apagava o tamanho e a posição). */
+.callg{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-size:.8rem;color:var(--muted)}
+.callg div{display:flex;align-items:center;gap:8px;min-width:0}
+.callg i{flex:none;width:22px;height:22px;border-radius:7px;background:var(--surface-2);display:flex;align-items:flex-end;justify-content:center;gap:2px;padding-bottom:4px}
+.callg .lg-on{background:var(--accent)}
+.callg .lg-dots b{width:5px;height:5px;border-radius:50%;background:var(--gc)}
+.callg .lg-act{background:none;border:2px dotted var(--accent)}
+.callg .lg-ph{background:linear-gradient(135deg,#6b7a8f,#c9a27e)}
+.rank .pos.md{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:.85rem;font-weight:800;color:#1a1408}
+.rank .pos.ouro{background:linear-gradient(135deg,#ffd76a,#e0a526)}
+.rank .pos.prata{background:linear-gradient(135deg,#eef0f3,#a9b0bb)}
+.rank .pos.bronze{background:linear-gradient(135deg,#f0b27a,#b5652b)}
+.fire{display:inline-flex;align-items:center;gap:6px}
+.fire svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round}
+.fire.on{color:var(--accent)}.fire.on svg{fill:var(--accent);stroke:var(--accent)}
+.frames .lk svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:2.2;vertical-align:-1px;margin-right:3px}
 .day.on .dots i{box-shadow:0 0 0 1.5px rgba(0,0,0,.35)}
 .day.ph,.day.ph.on,.wkstrip .on b.ph{background-color:var(--surface-2);background-size:cover;background-position:center;background-repeat:no-repeat;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.85)}
 .datebar h1{font-size:1.25rem}
@@ -1548,8 +1563,8 @@ function viewAmigos(){
   let body='';
   if(G.view==='rank'){
     const rows=G.members.map(m=>({...m,d:m.weekKey===ws?m.weekDays:0,v:m.weekKey===ws?m.weekVol:0})).sort((a,b)=>b.d-a.d||(b.streak||0)-(a.streak||0)||(b.total||0)-(a.total||0));
-    const medal=['🥇','🥈','🥉'];
-    body=rows.length?`<div class="list rank">${rows.map((m,i)=>`<div class="item ${m.id===me?'me':''}" data-act="friend" data-id="${m.id}" role="button" tabindex="0"><span class="pos">${m.d&&i<3?medal[i]:i+1}</span>${frameAv(m.lv||1,m.photo,m.name,'sm')}<div class="main"><div class="name">${esc(m.name)}${m.id===me?' <span class="muted">(você)</span>':''}</div><div class="sub num">${m.streak?`${m.streak} ${m.streak===1?'semana seguida':'semanas seguidas'}`:'começando agora'}</div></div><span class="days num"><b>${m.d}</b><small>${m.d===1?'dia':'dias'}</small></span></div>`).join('')}</div>
+    const medal=['ouro','prata','bronze'];
+    body=rows.length?`<div class="list rank">${rows.map((m,i)=>`<div class="item ${m.id===me?'me':''}" data-act="friend" data-id="${m.id}" role="button" tabindex="0"><span class="pos ${m.d&&i<3?'md '+medal[i]:''}">${i+1}</span>${frameAv(m.lv||1,m.photo,m.name,'sm')}<div class="main"><div class="name">${esc(m.name)}${m.id===me?' <span class="muted">(você)</span>':''}</div><div class="sub num">${m.streak?`${m.streak} ${m.streak===1?'semana seguida':'semanas seguidas'}`:'começando agora'}</div></div><span class="days num"><b>${m.d}</b><small>${m.d===1?'dia':'dias'}</small></span></div>`).join('')}</div>
       <p class="hint" style="margin:0">Conta os dias com presença marcada desta semana (domingo a sábado). Empate: quem está há mais semanas seguidas treinando. Toque em alguém pra ver o perfil.</p>`
       :`<div class="empty">O ranking aparece quando as pessoas do grupo abrirem o app.</div>`;
   }else{
@@ -1560,7 +1575,7 @@ function viewAmigos(){
         <div class="ptitle">${esc(p.title)}</div>${(p.groups||[]).length?pills(p.groups):''}
         ${p.img?`<img class="pimg" src="${p.img}" alt="Foto do treino de ${esc(p.name)}" loading="lazy">`:''}
         ${stats?`<div class="pstats num">${stats}</div>`:''}
-        <div class="pact"><button class="fire ${liked?'on':''}" data-act="gLike" data-id="${p.id}" aria-pressed="${liked}">🔥 ${likes.length||''}</button>${p.uid===me?`<button class="link" data-act="gDelPost" data-id="${p.id}">Apagar</button>`:''}</div></article>`;
+        <div class="pact"><button class="fire ${liked?'on':''}" data-act="gLike" data-id="${p.id}" aria-pressed="${liked}" aria-label="Curtir">${I_FLAME}${likes.length||''}</button>${p.uid===me?`<button class="link" data-act="gDelPost" data-id="${p.id}">Apagar</button>`:''}</div></article>`;
     }).join(''):`<div class="empty">Ninguém postou ainda. No fim do treino, toque em <b>Postar no feed dos grupos</b>.</div>`;
   }
   const foot=g.owner===me?`<button class="ghost danger" data-act="gDelete">Apagar este grupo</button>`:`<button class="ghost danger" data-act="gLeave">Sair deste grupo</button>`;
@@ -2011,7 +2026,7 @@ function viewPerfil(){
     ${b.goal&&GOALS[b.goal]&&b.w?`<span class="muted" style="font-size:.8rem">Proteína sugerida: ${Math.round(GOALS[b.goal].prot[0]*b.w)}–${Math.round(GOALS[b.goal].prot[1]*b.w)} g por dia.</span>`:''}</section>
   ${S.quiz?`<section class="card" style="display:flex;gap:12px;align-items:center;padding:16px"><span class="round" style="background:var(--surface-2);width:40px;height:40px">${I_LOCK}</span><span style="flex:1"><b style="display:block">Questionário de experiência</b><span class="muted" style="font-size:.8rem">Confirmado em ${esc(new Date(S.quiz.at||Date.now()).toLocaleDateString('pt-BR'))} · nível inicial Nv ${S.quiz.startLv} (${tierOf(S.quiz.startLv)}). Não pode mais ser alterado.</span></span></section>`:''}
   <div class="section"><h3>Molduras</h3>
-    <div class="frames">${[['Bronze',1,'Nv 1–5'],['Prata',6,'Nv 6–11'],['Ouro',12,'Nv 12–19'],['Diamante',20,'Nv 20+']].map(([n,l,r])=>`<div class="${X.level>=l?'':'off'} ${X.tier===n?'cur':''}">${frameAv(l,avatarSrc(),name,'sm')}<b>${n}</b><span>${X.level>=l?r:'🔒 '+r}</span></div>`).join('')}</div></div>
+    <div class="frames">${[['Bronze',1,'Nv 1–5'],['Prata',6,'Nv 6–11'],['Ouro',12,'Nv 12–19'],['Diamante',20,'Nv 20+']].map(([n,l,r])=>`<div class="${X.level>=l?'':'off'} ${X.tier===n?'cur':''}">${frameAv(l,avatarSrc(),name,'sm')}<b>${n}</b><span>${X.level>=l?r:`<i class="lk">${I_LOCK}</i>`+r}</span></div>`).join('')}</div></div>
   <div class="section"><h3>Conquistas · ${ach.filter(a=>a[1]).length} de ${ach.length}</h3>
     <div class="badges">${ach.map(([n,on])=>`<div class="badgec ${on?'':'off'}"><div class="md">${I_MEDAL}</div><span>${n}</span></div>`).join('')}</div></div>
   ${st.best.length?`<div class="section"><h3>Seus recordes</h3><div class="list recs">${st.best.map(bb=>`<div class="item">${pic(bb.e)}<div class="main"><div class="name">${esc(bb.e.name)}</div><div class="sub num">${ddmm(bb.k)}</div></div><span class="kg">${fmt(bb.w)} kg</span></div>`).join('')}</div></div>`:''}
@@ -2235,7 +2250,13 @@ function viewFreq(){
       <button class="iconbtn" data-act="month" data-n="1" aria-label="Próximo mês" ${isCur?'disabled':''}>›</button>
     </div>
     <div class="grid7">${['D','S','T','Q','Q','S','S'].map(x=>`<div class="wd">${x}</div>`).join('')}${cells}</div>
-    <p class="hint">Os pontinhos mostram as cores dos grupos treinados. Toque num dia para marcar ou desmarcar presença. Dias com foto abrem a foto. O anel pontilhado marca outras atividades fora da academia.</p>
+    <div class="callg">
+      <div><i class="lg-on"></i>Treinou</div>
+      <div><i class="lg-dots"><b style="${gc('Costas')}"></b><b style="${gc('Bíceps')}"></b><b style="${gc('Glúteos')}"></b></i>Músculos do dia</div>
+      <div><i class="lg-act"></i>Outra atividade</div>
+      <div><i class="lg-ph"></i>Tem foto</div>
+    </div>
+    <p class="hint" style="margin:12px 0 0;text-align:center">Toque num dia pra marcar presença ou ver a foto.</p>
   </div>
   ${(()=>{const acts=Object.keys(S.days).filter(k=>k.startsWith(prefix)).flatMap(k=>S.days[k].acts||[]);if(!acts.length)return '';
     const mins=acts.reduce((s,a)=>s+(a.min||0),0),byType={};for(const a of acts){const n=actName(a);byType[n]=(byType[n]||0)+1}
@@ -2281,7 +2302,7 @@ const firstName=()=>displayName().trim().split(/\s+/)[0]||'';
 function avatarHtml(cls){
   if(ui.photo)return `<img class="${cls}" src="${esc(ui.photo)}" alt="" referrerpolicy="no-referrer">`;
   const n=displayName();
-  return `<span class="${cls}">${n?esc(n.trim()[0].toUpperCase()):'🙂'}</span>`;
+  return `<span class="${cls}">${n?esc(n.trim()[0].toUpperCase()):'K'}</span>`;
 }
 function tabAvatar(){
   const t=document.getElementById('tabPerfil');if(!t)return;
