@@ -1,6 +1,6 @@
 // Deixa o app abrir mesmo sem internet. Arquivos do app: tenta a rede primeiro (para pegar atualizações).
 // Fontes e bibliotecas do Firebase: usa o que já está guardado.
-const CACHE = 'kova-v4';
+const CACHE = 'kova-v5';
 const APP = ['./', './index.html', './manifest.webmanifest', './firebase-config.js', './icon-180.png', './icon-192.png', './icon-512.png', './icon.svg'];
 
 self.addEventListener('install', e => {
@@ -26,4 +26,21 @@ self.addEventListener('fetch', e => {
       const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); return res;
     })));
   }
+});
+
+// Notificações (amigos treinaram, lembrete do treino, aviso de XP). Chegam pelo Firebase Cloud Messaging.
+self.addEventListener('push', e => {
+  let d = {};
+  try { const j = e.data ? e.data.json() : {}; d = j.data || j.notification || j; } catch (err) {}
+  e.waitUntil(self.registration.showNotification(d.title || 'KOVA', {
+    body: d.body || '', icon: 'icon-192.png', badge: 'icon-192.png', tag: d.tag || 'kova', data: { url: d.url || './' }
+  }));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = new URL((e.notification.data && e.notification.data.url) || './', self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
+    for (const c of cs) if (c.url.startsWith(self.registration.scope) && 'focus' in c) return c.focus();
+    return self.clients.openWindow(url);
+  }));
 });

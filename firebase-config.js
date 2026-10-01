@@ -11,3 +11,7 @@ window.FIREBASE_CONFIG = {
   messagingSenderId: "821889110598",
   appId: "1:821889110598:web:4778264fc0e5ee303e7047"
 };
+
+// Chave das notificações (Firebase › Configurações do projeto › Cloud Messaging › Certificados push da Web).
+// Enquanto estiver vazia, o app não mostra a opção de notificações.
+window.FIREBASE_VAPID_KEY = "BEv01ZjMmkK18FC-048wsn535dz4iJ-zHqQPJicNAWFazVvxqBNXyNHHtW48hPjEV6ODdaO6L7BpZYK25LyS_FE";

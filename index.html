@@ -560,6 +560,11 @@ select,input[type=text]{border:0;background:var(--surface);border-radius:14px}
 .badgec.off{opacity:.4}
 .badgec span{font-size:.7rem;font-weight:600}
 .rank .item{cursor:pointer}
+.ndemo{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:20px;background:var(--surface-2)}
+.ndemo .ni{flex:none;width:40px;height:40px;border-radius:11px;background:#0a0a0b;display:grid;place-items:center}
+.ndemo .ni svg{width:26px;height:22px}
+.ndemo .nt{display:flex;flex-direction:column;min-width:0;font-size:.88rem}
+.ndemo .nt small{font-weight:500;color:var(--muted);margin-left:6px}
 </style>
 
 <main id="app"></main>
@@ -812,8 +817,8 @@ function persistDayPhoto(k){
   else if(!okLocal)toast('A memória do navegador encheu. Entre com sua conta Google pra guardar mais fotos.');
 }
 function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
-const profileBody=()=>({v:S.v,goal:S.goal,nick:S.nick||'',onb:S.onb!==false,bio:S.bio||null,groups:S.groups||[],quiz:S.quiz||null,avatar:S.avatar||'',xpPublic:!!S.xpPublic,pause:S.pause||null,pauses:S.pauses||[],exercises:S.exercises,workouts:S.workouts,schedule:S.schedule});
-function persistProfile(){saveLocal();if(backend.col)queueWrite('profile',profileBody())}
+const profileBody=()=>({v:S.v,goal:S.goal,nick:S.nick||'',onb:S.onb!==false,bio:S.bio||null,groups:S.groups||[],quiz:S.quiz||null,avatar:S.avatar||'',xpPublic:!!S.xpPublic,pause:S.pause||null,pauses:S.pauses||[],notif:S.notif||null,exercises:S.exercises,workouts:S.workouts,schedule:S.schedule});
+function persistProfile(){saveLocal();scheduleMeta();if(backend.col)queueWrite('profile',profileBody())}
 function persistDay(k){
   saveLocal();scheduleStats();if(!backend.col)return;
   const d=S.days[k];
@@ -859,7 +864,7 @@ async function attach(col,skipCache){
     if(!s.exists||(skipCache&&s.metadata.fromCache)||pending.profile||busy.profile)return;
     const d=JSON.parse(JSON.stringify(s.data()));
     if(Array.isArray(d.exercises))S.exercises=d.exercises;
-    S.goal=d.goal||S.goal;S.v=d.v||1;S.nick=d.nick||'';S.workouts=d.workouts;S.schedule=d.schedule;S.onb=d.onb!==false;S.bio=d.bio||null;S.quiz=d.quiz||null;S.avatar=d.avatar||'';S.xpPublic=!!d.xpPublic;S.pause=d.pause||null;S.pauses=Array.isArray(d.pauses)?d.pauses:[];const gOld=JSON.stringify(S.groups||[]);S.groups=Array.isArray(d.groups)?d.groups:[];if(gOld!==JSON.stringify(S.groups)&&fb.uid)loadGroups();
+    S.goal=d.goal||S.goal;S.v=d.v||1;S.nick=d.nick||'';S.workouts=d.workouts;S.schedule=d.schedule;S.onb=d.onb!==false;S.bio=d.bio||null;S.quiz=d.quiz||null;S.avatar=d.avatar||'';S.xpPublic=!!d.xpPublic;S.pause=d.pause||null;S.pauses=Array.isArray(d.pauses)?d.pauses:[];S.notif=d.notif||null;const gOld=JSON.stringify(S.groups||[]);S.groups=Array.isArray(d.groups)?d.groups:[];if(gOld!==JSON.stringify(S.groups)&&fb.uid)loadGroups();
     if(ensureDefaults())persistProfile();else saveLocal();
     render();
   },()=>{}));
@@ -1357,7 +1362,7 @@ const restSecFor=(exId,k)=>Math.round(((planItemFor(exId,k)||{}).rest||1.5)*60);
 const G={list:{},sel:null,members:[],posts:[],unsubs:[],view:'rank'};
 function groupsOff(){G.unsubs.forEach(u=>{try{u()}catch(e){}});G.unsubs=[];G.list={};G.members=[];G.posts=[]}
 function afterLogin(){
-  loadGroups();scheduleStats();
+  loadGroups();scheduleStats();refreshPush();setTimeout(maybeAskNotif,1800);
   if(ui.pendingCode){const c=ui.pendingCode;ui.pendingCode=null;setTimeout(()=>sheetJoin(c),400)}
 }
 async function loadGroups(){
@@ -1389,10 +1394,86 @@ function myStats(){
   return {name:displayName()||'Sem nome',photo:avatarSrc(),weekKey:ws,weekDays,weekVol:Math.round(weekVol),monthKey:mk,monthDays,total:checkedKeys().length,streak,lv:X.level,prs:X.prs,xpPublic:!!S.xpPublic,areas:S.xpPublic?X.areas:null,updatedAt:Date.now()};
 }
 var statsT=null;
-function scheduleStats(){if(!fb.uid||!S.groups||!S.groups.length)return;clearTimeout(statsT);statsT=setTimeout(pushStats,2500)}
+function scheduleStats(){scheduleMeta();if(!fb.uid||!S.groups||!S.groups.length)return;clearTimeout(statsT);statsT=setTimeout(pushStats,2500)}
 async function pushStats(){
   if(!fb.uid)return;const st=myStats();
   for(const gid of S.groups){try{await fb.fs.collection('groups').doc(gid).collection('members').doc(fb.uid).set(st)}catch(e){}}
+}
+/* ================= Notificações na tela bloqueada =================
+   O app guarda em users/<uid>/meta/push o mínimo que o envio automático precisa
+   (último dia de treino, dias com treino no plano, preferências e o endereço deste celular).
+   Quem manda as notificações é a tarefa do GitHub (pasta notificacoes/), a cada 30 min. */
+const NOTIF_DEF={amigos:true,lembrete:true,xp:true,share:true};
+const notifPrefs=()=>({...NOTIF_DEF,...((S.notif&&S.notif.prefs)||{})});
+const isIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const lsGet=k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}};
+const lsSet=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}};
+function pushState(){
+  if(!window.FIREBASE_VAPID_KEY||!fb.ready||!fb.uid)return 'off';
+  if(!('Notification' in window)||!('serviceWorker' in navigator)||!('PushManager' in window))return isIOS&&!standalone()?'homescreen':'unsupported';
+  if(Notification.permission==='denied')return 'denied';
+  if(Notification.permission==='granted'&&lsGet('kova-push-token'))return 'on';
+  return 'ask';
+}
+const metaRef=()=>fb.fs.collection('users').doc(fb.uid).collection('meta').doc('push');
+var metaT=null;
+function scheduleMeta(){if(!fb.uid)return;clearTimeout(metaT);metaT=setTimeout(pushMeta,3000)}
+async function pushMeta(){
+  if(!fb.uid||!fb.fs)return;
+  const t=today(),act=sortedKeys().filter(k=>k<=t&&isActiveDay(k));
+  const plan={};for(let i=0;i<7;i++){const w=wById(S.schedule[String(i)]);if(w&&w.items.length)plan[i]=w.t}
+  try{await metaRef().set({name:displayName()||'',lastDay:act.length?act[act.length-1]:null,plan,
+    pausedUntil:S.pause?addDays(S.pause,30):null,xpOn:!!S.quiz,prefs:notifPrefs(),tz:new Date().getTimezoneOffset(),updatedAt:Date.now()},{merge:true})}catch(e){}
+}
+async function messaging(){
+  if(!firebase.messaging)await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
+  return firebase.messaging();
+}
+async function saveToken(){
+  const m=await messaging(),reg=await navigator.serviceWorker.ready;
+  const token=await m.getToken({vapidKey:window.FIREBASE_VAPID_KEY,serviceWorkerRegistration:reg});
+  if(!token)throw new Error('sem token');
+  const FV=firebase.firestore.FieldValue,old=lsGet('kova-push-token');
+  await metaRef().set({tokens:FV.arrayUnion(token)},{merge:true});
+  if(old&&old!==token)await metaRef().update({tokens:FV.arrayRemove(old)}).catch(()=>{});
+  lsSet('kova-push-token',token);
+}
+async function enablePush(){
+  let perm='default';
+  try{perm=await Notification.requestPermission()}catch(e){}
+  if(perm!=='granted'){toast(perm==='denied'?'Notificações bloqueadas. Libere em Ajustes › Notificações › KOVA.':'Tudo bem. Dá pra ativar depois no Perfil.');render();return}
+  try{await saveToken();await pushMeta();toast('Notificações ativadas!')}
+  catch(e){toast('Não deu pra ativar agora. Tente de novo em instantes.')}
+  render();
+}
+async function disablePush(){
+  const tk=lsGet('kova-push-token');
+  try{if(tk)await metaRef().update({tokens:firebase.firestore.FieldValue.arrayRemove(tk)});(await messaging()).deleteToken().catch(()=>{})}catch(e){}
+  lsSet('kova-push-token',null);render();toast('Notificações desativadas neste celular');
+}
+async function refreshPush(){if(pushState()==='on')try{await saveToken()}catch(e){}}
+function maybeAskNotif(){
+  if(pushState()!=='ask'||Notification.permission!=='default'||lsGet('kova-notif-asked'))return;
+  if(sheetRoot.innerHTML||!S.quiz||S.onb===false||ui.redo)return;
+  lsSet('kova-notif-asked','1');
+  openSheet(`<div class="sheethead"><div><h2>Ativar notificações?</h2></div>${closeBtn()}</div>
+    <div class="ndemo" aria-hidden="true"><span class="ni">${KMARK}</span><span class="nt"><b>KOVA <small>agora</small></b><span>Ana já treinou hoje. E você? 💪</span></span></div>
+    <p class="muted" style="margin:0;font-size:.9rem">Saiba quando seus amigos treinarem, receba um lembrete nos dias de treino e um aviso antes do seu XP começar a cair. Você escolhe o que quer receber no Perfil.</p>
+    <button class="primary" data-act="notifOn">Ativar notificações</button>
+    <button class="link" data-act="close" style="align-self:center">Agora não</button>`);
+}
+function notifSection(){
+  const s=pushState();
+  if(s==='off'||s==='unsupported')return '';
+  const box=(t,x,btn)=>`<div class="section"><h3>Notificações</h3><section class="card" style="display:flex;flex-direction:column;gap:10px;padding:16px"><b>${t}</b><span class="muted" style="font-size:.84rem">${x}</span>${btn||''}</section></div>`;
+  if(s==='homescreen')return box('Abra pelo ícone do KOVA','No iPhone, as notificações só funcionam com o KOVA aberto pelo ícone da Tela de Início (no Safari: Compartilhar › Adicionar à Tela de Início).');
+  if(s==='denied')return box('Notificações bloqueadas','Pra liberar: Ajustes do celular › Notificações › KOVA › Permitir Notificações.');
+  if(s==='ask')return box('Receba avisos na tela bloqueada','Quando seus amigos treinarem, lembrete nos dias de treino e aviso antes do XP cair.','<button class="primary" data-act="notifOn">Ativar notificações</button>');
+  const P=notifPrefs();
+  const opts=[['amigos','Amigos treinaram','“Ana já treinou hoje. E você?” No máximo 2 por dia.'],['lembrete','Lembrete do treino','Às 18h, nos dias com treino no plano, se você ainda não treinou.'],S.quiz?['xp','Aviso de XP','2 dias antes do seu XP começar a cair.']:null,['share','Avisar amigos quando eu treinar','Quem está nos seus grupos recebe o aviso.']].filter(Boolean);
+  return `<div class="section"><h3>Notificações</h3>${opts.map(([k,t,x])=>`<button class="card switch" data-act="notifPref" data-k="${k}"><span class="sl"><b>${t}</b><span>${x}</span></span><i class="sw ${P[k]?'on':''}"></i></button>`).join('')}
+    <button class="link" data-act="notifOff" style="align-self:flex-start">Desativar neste celular</button></div>`;
 }
 const newCode=()=>Array.from({length:6},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
 async function addGroup(gid){
@@ -1919,6 +2000,7 @@ function viewPerfil(){
   </div>
   <button class="card switch" data-act="xpPublic"><span class="sl"><b>XP público pros amigos</b><span>${S.xpPublic?'Quem está nos seus grupos vê seu nível e o XP por área.':'Só você vê seu XP. Nos grupos aparecem só os dias de treino.'}</span></span><i class="sw ${S.xpPublic?'on':''}"></i></button>
   <button class="card switch" data-act="pause"><span class="sl"><b>Modo pausa</b><span>${paused?`XP congelado até ${ddmm(addDays(S.pause,30))}. Desligue quando voltar a treinar.`:'Férias, lesão ou doença? Congela seu XP por até 30 dias.'}</span></span><i class="sw ${paused?'on':''}"></i></button>
+  ${notifSection()}
   <section class="card" style="display:flex;flex-direction:column;gap:10px;padding:16px">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b>Seu corpo</b><button class="link" data-act="bodyEdit">Atualizar peso</button></div>
     <div class="num" style="display:grid;grid-template-columns:repeat(4,1fr);text-align:center">${[['Idade',b.age?b.age:'—',''],['Peso',b.w?fmt(b.w):'—','kg'],['Altura',b.h||'—','cm'],['IMC',bmi?fmt(bmi):'—','']].map(([l,v,u])=>`<div><span class="eyebrow">${l}</span><b style="display:block;font-size:1.1rem;font-weight:800">${v}<span class="muted" style="font-size:.7rem"> ${u}</span></b></div>`).join('')}</div>
@@ -1980,6 +2062,9 @@ document.addEventListener('click',ev=>{
   }
   if(a==='pickAvatar'){pickFile(f=>openCropper(f,1,true,'Foto de perfil',320,d=>{S.avatar=d;persistProfile();scheduleStats();render();toast('Foto de perfil atualizada')}));return}
   if(a==='bodyEdit')return sheetBody();
+  if(a==='notifOn'){closeSheet();enablePush();return}
+  if(a==='notifOff'){disablePush();return}
+  if(a==='notifPref'){const k=b.dataset.k,P=notifPrefs();P[k]=!P[k];S.notif={...(S.notif||{}),prefs:P};persistProfile();const y=window.scrollY;render();window.scrollTo(0,y);return}
   if(a==='bodySave'){const v=Math.min(250,Math.max(30,readNum('bodyW')));S.bio={...(S.bio||{}),w:v};persistProfile();closeSheet();render();toast('Peso atualizado');return}
   if(a==='friend'){if(b.dataset.id===fb.uid){ui.tab='perfil';render();window.scrollTo(0,0);return}ui.friend=b.dataset.id;render();window.scrollTo(0,0);return}
   if(a==='friendBack'){ui.friend=null;render();window.scrollTo(0,0);return}

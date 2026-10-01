@@ -74,3 +74,9 @@ Tudo é feito dentro do app, na aba **Plano**:
 | `firestore.rules` | regras de segurança para colar no Firebase |
 | `manifest.webmanifest`, `icon-*.png`, `icon.svg` | nome e ícone ao instalar no celular |
 | `sw.js` | faz o app abrir mesmo sem internet |
+
+## Notificações (amigos treinaram, lembrete, aviso de XP)
+
+- O app pede permissão (iPhone: só abrindo pelo ícone da Tela de Início, iOS 16.4+) e guarda o endereço do celular em `users/<uid>/meta/push`.
+- Quem envia é a tarefa `.github/workflows/notificacoes.yml`, que roda `notificacoes/enviar.mjs` a cada 30 min (8h–22h no horário de cada pessoa).
+- Precisa de: `FIREBASE_VAPID_KEY` em `firebase-config.js` e o segredo `FIREBASE_SERVICE_ACCOUNT` no GitHub (Settings › Secrets and variables › Actions).
