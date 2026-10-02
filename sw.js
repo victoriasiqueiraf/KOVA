@@ -1,6 +1,6 @@
 // Deixa o app abrir mesmo sem internet. Arquivos do app: tenta a rede primeiro (para pegar atualizações).
 // Fontes e bibliotecas do Firebase: usa o que já está guardado.
-const CACHE = 'kova-v12';
+const CACHE = 'kova-v14';
 const APP = ['./', './index.html', './manifest.webmanifest', './firebase-config.js', './icon-180.png', './icon-192.png', './icon-512.png', './icon.svg'];
 
 self.addEventListener('install', e => {
