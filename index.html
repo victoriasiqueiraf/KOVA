@@ -185,6 +185,7 @@ select,input[type=text]{width:100%;font:inherit;font-size:16px;padding:12px 14px
 .timer .clock{flex:1;min-width:0;font-family:var(--display);font-weight:700;font-size:1.6rem;font-variant-numeric:tabular-nums;line-height:1}
 .timer .clock small{display:block;font-family:var(--body);font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
 .timer .sm{min-height:44px}
+.timer .zero{display:block;font-family:var(--body);font-size:.78rem;font-weight:600;color:var(--accent);text-decoration:underline;text-underline-offset:2px;padding:8px 0 2px}
 .sm.solid{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .seg3{grid-template-columns:repeat(3,1fr)}
 .seg4{grid-template-columns:repeat(4,1fr)}
@@ -577,6 +578,35 @@ select,input[type=text]{border:0;background:var(--surface);border-radius:14px}
 .ndemo .ni svg{width:26px;height:22px}
 .ndemo .nt{display:flex;flex-direction:column;min-width:0;font-size:.88rem}
 .ndemo .nt small{font-weight:500;color:var(--muted);margin-left:6px}
+.swp{position:relative;overflow:hidden;touch-action:pan-y;border-top:1px solid var(--line)}
+.swp:first-child{border-top:0}
+.swp>.irow{border-top:0;position:relative;z-index:1;background:var(--surface);transition:transform .2s ease}
+.swp.drag>.irow{transition:none}
+.swbg{position:absolute;inset:0;display:flex;justify-content:flex-end;background:var(--danger)}
+.swbg button{width:96px;color:#fff;font-weight:700}
+.wkline .grip{flex:none;width:48px;align-self:stretch;display:grid;place-items:center;color:var(--muted);touch-action:none;cursor:grab}
+.wkline .grip svg{width:18px;height:18px;fill:currentColor}
+.wkline.lift{opacity:.35}
+.wkline.drop{box-shadow:inset 0 0 0 2px var(--accent);border-radius:16px}
+.dragghost{position:fixed;z-index:30;pointer-events:none;background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:12px 16px;display:flex;flex-direction:column;gap:5px;opacity:.95}
+.toast button{margin-left:12px;color:var(--accent);font-weight:800;text-decoration:underline;text-underline-offset:2px}
+.plans{display:flex;flex-direction:column;gap:10px}
+.plan{background:var(--surface);border-radius:24px;overflow:hidden}
+.plan.open{box-shadow:inset 0 0 0 2px var(--accent)}
+.plh{display:flex;align-items:center;gap:12px;width:100%;padding:16px 18px;text-align:left}
+.plh .m{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.plh .t{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.plh b{font-weight:800;font-size:1.12rem}
+.plh .sub{font-size:.8rem;color:var(--muted)}
+.plh .car{flex:none;width:32px;height:32px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;transition:transform .2s}
+.plh .car svg{width:16px;height:16px;stroke:var(--fg);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.plan.open .plh .car{transform:rotate(180deg)}
+.ptag{font-size:.64rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 8px;background:var(--accent);color:var(--accent-ink)}
+.plb{display:flex;flex-direction:column;gap:12px;padding:0 10px 14px}
+.plb .list{background:var(--bg)}
+.plb .list .irow,.plb .list .wkrow{background:var(--bg)}
+.plact{display:flex;justify-content:center;gap:22px}
+.wkrow .main .sub{font-size:.78rem}
 </style>
 
 <main id="app"></main>
@@ -806,6 +836,10 @@ function ensureDefaults(){
   if((S.v||3)<6){for(const d of Object.values(CAT)){if(!S.exercises.some(e=>e.id===d.id||norm(e.name)===norm(d.name))){S.exercises.push({...d});ch=true}}}
   if((S.v||3)<7){for(const d of Object.values(CAT)){if(!S.exercises.some(e=>e.id===d.id||norm(e.name)===norm(d.name))){S.exercises.push({...d});ch=true}}}
   if((S.v||3)<5){for(const w of S.workouts||[])if(w.t==='Pernas'||w.t==='Treino de inferiores'){w.t='Inferiores';ch=true}S.v=5}
+  // Vários planos: o plano em uso guarda a semana em S.schedule; os outros guardam a deles em plans[].schedule.
+  if(!Array.isArray(S.plans)||!S.plans.length){S.plans=[{id:'main',name:(S.bio&&GOALS[S.bio.goal]?GOALS[S.bio.goal].n:'Meu plano'),schedule:null}];S.activePlan='main';ch=true}
+  if(!S.plans.some(p=>p.id===S.activePlan)){S.activePlan=S.plans[0].id;ch=true}
+  for(const w of S.workouts||[])if(!w.p){w.p=S.activePlan;ch=true}
   S.v=Math.max(7,S.v||7);return ch;
 }
 let DP={};try{DP=JSON.parse(localStorage.getItem(LS+'-dayphotos')||'{}')||{}}catch(e){}
@@ -833,14 +867,14 @@ function persistDayPhoto(k){
   else if(!okLocal)toast('A memória do navegador encheu. Entre com sua conta Google pra guardar mais fotos.');
 }
 function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
-const profileBody=()=>({v:S.v,goal:S.goal,nick:S.nick||'',onb:S.onb!==false,bio:S.bio||null,groups:S.groups||[],quiz:S.quiz||null,avatar:S.avatar||'',xpPublic:!!S.xpPublic,pause:S.pause||null,pauses:S.pauses||[],notif:S.notif||null,exercises:S.exercises,workouts:S.workouts,schedule:S.schedule});
+const profileBody=()=>({v:S.v,goal:S.goal,nick:S.nick||'',onb:S.onb!==false,bio:S.bio||null,groups:S.groups||[],quiz:S.quiz||null,avatar:S.avatar||'',xpPublic:!!S.xpPublic,pause:S.pause||null,pauses:S.pauses||[],notif:S.notif||null,plans:S.plans||null,activePlan:S.activePlan||null,exercises:S.exercises,workouts:S.workouts,schedule:S.schedule});
 function persistProfile(){saveLocal();scheduleMeta();if(backend.col)queueWrite('profile',profileBody())}
 function persistDay(k){
   saveLocal();scheduleStats();if(!backend.col)return;
   const d=S.days[k];
   if(!d||(!d.checked&&!d.logs.length&&!d.w&&!d.start&&!(d.done&&d.done.length)&&!(d.acts&&d.acts.length)))return queueWrite('day-'+k,null);
   const body={kind:'day',date:k,checked:!!d.checked,logs:d.logs};if(d.w)body.w=d.w;if(d.done)body.done=d.done;
-  for(const f of ['start','end','dur'])if(d[f]!=null)body[f]=d[f];
+  for(const f of ['start','end','dur','manual'])if(d[f]!=null)body[f]=d[f];
   if(d.acts&&d.acts.length)body.acts=d.acts;
   queueWrite('day-'+k,body);
 }
@@ -880,7 +914,7 @@ async function attach(col,skipCache){
     if(!s.exists||(skipCache&&s.metadata.fromCache)||pending.profile||busy.profile)return;
     const d=JSON.parse(JSON.stringify(s.data()));
     if(Array.isArray(d.exercises))S.exercises=d.exercises;
-    S.goal=d.goal||S.goal;S.v=d.v||1;S.nick=d.nick||'';S.workouts=d.workouts;S.schedule=d.schedule;S.onb=d.onb!==false;S.bio=d.bio||null;S.quiz=d.quiz||null;S.avatar=d.avatar||'';S.xpPublic=!!d.xpPublic;S.pause=d.pause||null;S.pauses=Array.isArray(d.pauses)?d.pauses:[];S.notif=d.notif||null;const gOld=JSON.stringify(S.groups||[]);S.groups=Array.isArray(d.groups)?d.groups:[];if(gOld!==JSON.stringify(S.groups)&&fb.uid)loadGroups();
+    S.goal=d.goal||S.goal;S.v=d.v||1;S.nick=d.nick||'';S.workouts=d.workouts;S.schedule=d.schedule;S.onb=d.onb!==false;S.bio=d.bio||null;S.quiz=d.quiz||null;S.avatar=d.avatar||'';S.xpPublic=!!d.xpPublic;S.pause=d.pause||null;S.pauses=Array.isArray(d.pauses)?d.pauses:[];S.notif=d.notif||null;S.plans=Array.isArray(d.plans)?d.plans:null;S.activePlan=d.activePlan||null;const gOld=JSON.stringify(S.groups||[]);S.groups=Array.isArray(d.groups)?d.groups:[];if(gOld!==JSON.stringify(S.groups)&&fb.uid)loadGroups();
     if(ensureDefaults())persistProfile();else saveLocal();
     render();
   },()=>{}));
@@ -899,7 +933,7 @@ async function attach(col,skipCache){
   backend.unsubs.push(col.where('kind','==','day').onSnapshot(q=>{
     if(skipCache&&q.metadata.fromCache)return;
     const days={};
-    for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:JSON.parse(JSON.stringify(d.logs||[]))};if(d.w)days[d.date].w=d.w;if(Array.isArray(d.done))days[d.date].done=[...d.done];for(const f of ['start','end','dur'])if(d[f]!=null)days[d.date][f]=d[f];if(Array.isArray(d.acts))days[d.date].acts=JSON.parse(JSON.stringify(d.acts))}
+    for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:JSON.parse(JSON.stringify(d.logs||[]))};if(d.w)days[d.date].w=d.w;if(Array.isArray(d.done))days[d.date].done=[...d.done];for(const f of ['start','end','dur','manual'])if(d[f]!=null)days[d.date][f]=d[f];if(Array.isArray(d.acts))days[d.date].acts=JSON.parse(JSON.stringify(d.acts))}
     for(const k of Object.keys(S.days)){const id='day-'+k;if(pending[id]||busy[id])days[k]=S.days[k]}
     S.days=days;saveLocal();render();
   },()=>{}));
@@ -967,7 +1001,7 @@ function planItemFor(exId,k){
 }
 function isDone(k,ex){const d=S.days[k];if(!d)return false;return d.done?d.done.includes(ex):d.logs.some(l=>l.ex===ex)}
 function setDone(k,ex,on){const d=dayOf(k);if(!d.done)d.done=[...new Set(d.logs.map(l=>l.ex))];d.done=d.done.filter(x=>x!==ex);if(on){d.done.push(ex);d.checked=true;autoStart(k)}}
-function autoStart(k){const d=dayOf(k);if(k===today()&&!d.start&&!d.end)d.start=Date.now()}
+function autoStart(k){const d=dayOf(k);if(k===today()&&!d.start&&!d.end&&!d.manual)d.start=Date.now()}
 const dayOf=k=>S.days[k]||(S.days[k]={checked:false,logs:[]});
 const sortedKeys=()=>Object.keys(S.days).sort();
 function lastEntry(exId,beforeKey){
@@ -1031,7 +1065,8 @@ function sheetDayPhoto(k){
 }
 function timerBlock(k,d,w){
   const isToday=k===today(),any=d.logs.length||(d.done&&d.done.length);
-  if(d.start&&!d.end&&isToday)return `<div class="timer"><div class="clock"><small>Treinando</small><span id="clock">${clk(Date.now()-d.start)}</span></div><button class="sm solid" data-act="finish">Finalizar treino</button></div>`;
+  if(d.start&&!d.end&&isToday)return `<div class="timer"><div class="clock"><small>Treinando</small><span id="clock">${clk(Date.now()-d.start)}</span><button class="zero" data-act="zeroAsk">Zerar</button></div><button class="sm solid" data-act="finish">Finalizar treino</button></div>`;
+  if(isToday&&d.manual&&!d.start&&!d.end)return `<div class="timer"><div class="clock"><small>Cronômetro</small>00:00</div><button class="sm solid" data-act="start">Iniciar treino</button></div>`;
   if(d.end||any){const m=durMin(d);return `<div class="timer"><div class="clock"><small>${d.end?'Treino finalizado':'Treino do dia'}</small>${m?`${m} min`:'Pronto'}</div>${isToday?'<button class="sm" data-act="restart">Reiniciar</button>':''}<button class="sm solid" data-act="share" data-k="${k}">Compartilhar</button></div>`}
   if(isToday&&w&&w.items.length)return `<div class="timer"><div class="clock"><small>Cronômetro</small>00:00</div><button class="sm solid" data-act="start">Iniciar treino</button></div>`;
   return '';
@@ -1322,7 +1357,7 @@ function viewOnboarding(){
   const o=ui.ob;
   return `
   <div class="section"><div class="eyebrow">KOVA</div><h1>${ui.redo?'Novo plano':'Vamos montar seu treino'}</h1>
-    <p class="muted">${ui.redo?'Seus treinos atuais serão trocados pelo plano novo. Seu histórico de cargas e presenças continua salvo.':'Responda rapidinho e o app monta sua semana de treino. Dá pra mudar tudo depois.'}</p></div>
+    <p class="muted">${ui.redo?'Isso cria mais um plano. O plano que você usa hoje continua salvo e dá pra voltar pra ele quando quiser.':'Responda rapidinho e o app monta sua semana de treino. Dá pra mudar tudo depois.'}</p></div>
   ${ui.pendingCode&&ui.sync!=='google'?`<div class="banner"><p><b>Você foi convidada pra um grupo!</b> Monte seu treino e depois entre com Google pra participar.</p></div>`:''}
   ${!ui.redo&&fb.ready&&ui.sync!=='google'?`<div class="banner"><p><b>Já usa o KOVA?</b> Entre com a mesma conta Google pra recuperar seus treinos.</p><button class="gbtn" data-act="signin">${GICON}Entrar com Google</button></div>`:''}
   <div class="section"><h3>1. Qual é o seu objetivo?</h3>
@@ -1337,7 +1372,7 @@ function viewOnboarding(){
   <button class="primary" data-act="obCreate">Criar meu plano</button>`:''}
   <div class="section"><button class="ghost" data-act="obZero">Começar do zero, sem plano pronto</button>
     <p class="hint" style="margin:0">Você monta os seus próprios treinos na aba Plano.</p></div>
-  ${ui.redo?'<button class="ghost" data-act="obCancel">Cancelar e manter meu plano</button>':''}`;
+  ${ui.redo?'<button class="ghost" data-act="obCancel">Cancelar</button>':''}`;
 }
 function obDone(msg){S.onb=true;ui.redo=false;ui.ob=null;ui.tab='plano';persistProfile();render();window.scrollTo(0,0);toast(msg)}
 
@@ -1622,13 +1657,16 @@ document.addEventListener('click',async ev=>{
     case 'obDays':readOb();ui.ob.days=+b.dataset.n;render();return;
     case 'obLevel':readOb();ui.ob.level=b.dataset.l;render();return;
     case 'obCreate':{
-      readOb();const o=ui.ob,plan=genPlan(o);
-      S.workouts=plan.workouts;S.schedule=plan.sched;S.goal=o.days;S.bio={...(S.bio||{}),w:o.w,h:o.h,age:o.age,goal:o.goal,days:o.days,level:o.level};
+      readOb();const o=ui.ob,plan=genPlan(o),redo=ui.redo;
+      S.bio={...(S.bio||{}),w:o.w,h:o.h,age:o.age,goal:o.goal,days:o.days,level:o.level};
+      if(redo){const pid=addPlan(GOALS[o.goal].n,plan.workouts,plan.sched);obDone(`Plano ${planName(pid)} criado!`);askUsePlan(pid);return}
+      S.workouts=plan.workouts.map(w=>({...w,p:'main'}));S.schedule=plan.sched;S.goal=o.days;S.plans=[{id:'main',name:GOALS[o.goal].n,schedule:null}];S.activePlan='main';
       obDone(`Plano de ${GOALS[o.goal].n.toLowerCase()} criado!`);return;
     }
     case 'obZero':
-      if(ui.redo&&!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Toque de novo: isso apaga seus treinos atuais';return}
-      readOb();S.workouts=[];S.schedule={'0':null,'1':null,'2':null,'3':null,'4':null,'5':null,'6':null};S.bio={...(S.bio||{}),w:ui.ob.w,h:ui.ob.h,goal:'zero'};
+      readOb();
+      if(ui.redo){const pid=addPlan('Plano novo',[],{'0':null,'1':null,'2':null,'3':null,'4':null,'5':null,'6':null});obDone('Plano vazio criado');askUsePlan(pid);return}
+      S.workouts=[];S.schedule={'0':null,'1':null,'2':null,'3':null,'4':null,'5':null,'6':null};S.bio={...(S.bio||{}),w:ui.ob.w,h:ui.ob.h,goal:'zero'};S.plans=[{id:'main',name:'Meu plano',schedule:null}];S.activePlan='main';
       obDone('Pronto! Crie seu primeiro treino em "+ Criar treino".');return;
     case 'restGo':startRest(+b.dataset.s||90);return;
     case 'restAdd':rest.end+=(+b.dataset.n)*1000;rest.total=Math.max(rest.total+(+b.dataset.n),5);tickRest();return;
@@ -1909,7 +1947,7 @@ function viewPlanStep(){
   const o=ui.ob;
   return `${brandHead()}
   <div class="section"><h1>${ui.redo?'Novo plano':'Seu plano de treino'}</h1>
-    <p class="muted">${ui.redo?'Seus treinos atuais serão trocados pelo plano novo. Seu histórico, seu XP e suas presenças continuam salvos.':'Agora escolha o objetivo e quantos dias você vai treinar. O KOVA monta a semana pra você, considerando sua idade, peso e experiência.'}</p></div>
+    <p class="muted">${ui.redo?'Isso cria mais um plano. O plano que você usa hoje continua salvo e dá pra voltar pra ele quando quiser.':'Agora escolha o objetivo e quantos dias você vai treinar. O KOVA monta a semana pra você, considerando sua idade, peso e experiência.'}</p></div>
   <div class="section"><h3>Qual é o seu objetivo?</h3>
     <div class="goals">${Object.keys(GOALS).map(g=>`<button class="goalc ${o.goal===g?'on':''}" data-act="obGoal" data-g="${g}"><b>${GOALS[g].n}</b><span>${GOALS[g].d}</span></button>`).join('')}</div></div>
   ${o.goal?`<div class="section"><h3>Quantos dias por semana na academia?</h3>
@@ -1917,7 +1955,7 @@ function viewPlanStep(){
   <button class="primary" data-act="obCreate">Criar meu plano</button>`:''}
   <div class="section"><button class="ghost" data-act="obZero">Começar do zero, sem plano pronto</button>
     <p class="hint" style="margin:0">Você monta os seus próprios treinos na aba Plano.</p></div>
-  ${ui.redo?'<button class="ghost" data-act="obCancel">Cancelar e manter meu plano</button>':''}`;
+  ${ui.redo?'<button class="ghost" data-act="obCancel">Cancelar</button>':''}`;
 }
 function viewOnboarding(){
   if(!S.quiz){if(!ui.q)quizInit();return ui.q.step==='confirm'?viewQuizConfirm():viewQuizAsk()}
@@ -2086,6 +2124,111 @@ document.addEventListener('click',ev=>{
   if(a==='friendBack'){ui.friend=null;render();window.scrollTo(0,0);return}
 });
 
+
+/* ================= Vários planos ================= */
+const I_CARET='<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
+const curPlan=()=>S.plans.find(p=>p.id===S.activePlan)||S.plans[0];
+const planName=id=>(S.plans.find(p=>p.id===id)||{}).name||'';
+const planWorkouts=pid=>(S.workouts||[]).filter(w=>w.p===pid);
+const planSched=pid=>pid===S.activePlan?S.schedule:((S.plans.find(p=>p.id===pid)||{}).schedule||{});
+function addPlan(name,workouts,sched){
+  const pid='pl'+Date.now().toString(36),map={};
+  let nm=name,n=2;while(S.plans.some(p=>p.name===nm))nm=`${name} ${n++}`;
+  for(const w of workouts){const id=w.id+'-'+pid;map[w.id]=id;S.workouts.push({...w,id,p:pid})}
+  const sc={};for(const d in sched)sc[d]=sched[d]?map[sched[d]]||null:null;
+  S.plans.push({id:pid,name:nm,schedule:sc});persistProfile();return pid;
+}
+// Antes de trocar de plano, os dias já treinados guardam o treino que foi feito (assim o histórico e o XP não mudam).
+function freezePast(){const t=today();for(const k of Object.keys(S.days)){if(k>t||!isActiveDay(k)||S.days[k].w)continue;S.days[k].w=S.schedule[String(parseKey(k).getDay())]||'rest';persistDay(k)}}
+function usePlan(pid){
+  if(pid===S.activePlan||!S.plans.some(p=>p.id===pid))return;
+  freezePast();
+  const cur=curPlan();cur.schedule={...S.schedule};
+  const nx=S.plans.find(p=>p.id===pid);S.schedule={'0':null,'1':null,'2':null,'3':null,'4':null,'5':null,'6':null,...(nx.schedule||{})};S.activePlan=pid;
+  ui.planOpen=pid;ui.group=null;_xp=null;persistProfile();scheduleMeta();render();window.scrollTo(0,0);toast(`Plano em uso: ${nx.name}`);
+}
+function askUsePlan(pid){
+  openSheet(`<div class="sheethead"><div><div class="eyebrow">Plano novo criado</div><h2>Começar a usar o plano ${esc(planName(pid))} agora?</h2></div>${closeBtn()}</div>
+    <p class="note2">O plano ${esc(curPlan().name)} continua salvo. Dá pra voltar pra ele quando quiser.</p>
+    <button class="primary" data-act="planUse" data-id="${pid}">Usar agora</button>
+    <button class="ghost" data-act="close">Depois</button>`);
+  ui.planOpen=pid;
+}
+
+/* ================= Gestos: arrastar pra excluir e arrastar pra trocar o dia ================= */
+const I_GRIP='<svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+let undoFn=null;
+function undoToast(msg,fn){const t=document.getElementById('toast');t.innerHTML=`<span>${esc(msg)}</span><button data-act="undo">Desfazer</button>`;undoFn=fn;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{t.hidden=true;undoFn=null},5000)}
+function rerenderCtx(ctx,wid){if(ctx==='sheet')return sheetWorkout(wid);const y=window.scrollY;render();window.scrollTo(0,y)}
+function removeItem(wid,i,ctx){
+  const w=wById(wid);if(!w||!w.items[i])return;
+  const [it]=w.items.splice(i,1),e=exById(it.ex);
+  persistProfile();rerenderCtx(ctx,wid);
+  undoToast(`${e?e.name:'Exercício'} saiu do treino ${w.t}`,()=>{w.items.splice(Math.min(i,w.items.length),0,it);persistProfile();rerenderCtx(ctx,wid)});
+}
+function swipeDelete(el){const row=el.querySelector(':scope>.irow');row.style.transform='translateX(-100%)';setTimeout(()=>removeItem(el.dataset.w,+el.dataset.i,el.dataset.ctx),180)}
+let SW=null,noClick=false;
+function closeSwipes(except){document.querySelectorAll('.swp.open').forEach(o=>{if(o!==except){o.classList.remove('open');o.querySelector(':scope>.irow').style.transform=''}})}
+document.addEventListener('pointerdown',e=>{
+  const el=e.target.closest('.swp');closeSwipes(el);
+  if(!el||e.target.closest('.swbg')||(e.pointerType==='mouse'&&e.button!==0))return;
+  SW={el,row:el.querySelector(':scope>.irow'),x:e.clientX,y:e.clientY,dx:0,on:false,base:el.classList.contains('open')?-96:0,id:e.pointerId};
+},true);
+document.addEventListener('pointermove',e=>{
+  if(!SW||e.pointerId!==SW.id)return;
+  const dx=e.clientX-SW.x,dy=e.clientY-SW.y;
+  if(!SW.on){
+    if(Math.abs(dx)>10&&Math.abs(dx)>Math.abs(dy)*1.3){SW.on=true;SW.el.classList.add('drag');try{SW.el.setPointerCapture(e.pointerId)}catch(err){}}
+    else if(Math.abs(dy)>10){SW=null;return}else return;
+  }
+  SW.dx=Math.min(0,SW.base+dx);SW.row.style.transform=`translateX(${SW.dx}px)`;
+});
+function endSwipe(e){
+  if(!SW||e.pointerId!==SW.id)return;const s=SW;SW=null;
+  if(!s.on)return;s.el.classList.remove('drag');noClick=true;setTimeout(()=>noClick=false,350);
+  if(e.type==='pointercancel'){s.row.style.transform=s.base?'translateX(-96px)':'';return}
+  if(s.dx<-s.el.offsetWidth*0.55)return swipeDelete(s.el);
+  if(s.dx<-48){s.el.classList.add('open');s.row.style.transform='translateX(-96px)'}
+  else{s.el.classList.remove('open');s.row.style.transform=''}
+}
+document.addEventListener('pointerup',endSwipe);document.addEventListener('pointercancel',endSwipe);
+document.addEventListener('click',e=>{if(noClick){e.stopPropagation();e.preventDefault();return}
+  const b=e.target.closest('[data-act="swDel"],[data-act="undo"]');if(!b)return;
+  if(b.dataset.act==='swDel'){e.stopPropagation();swipeDelete(b.closest('.swp'));return}
+  if(b.dataset.act==='undo'){e.stopPropagation();const f=undoFn;undoFn=null;document.getElementById('toast').hidden=true;f&&f()}
+},true);
+
+// Semana: segura nos pontinhos e arrasta o treino pra outro dia (os dois dias trocam de treino).
+let DG=null;
+document.addEventListener('pointerdown',e=>{
+  const g=e.target.closest('.wkline .grip');if(!g)return;e.preventDefault();
+  const line=g.closest('.wkline'),r=line.getBoundingClientRect(),main=line.querySelector('.main');
+  const ghost=document.createElement('div');ghost.className='dragghost';ghost.innerHTML=main.innerHTML;
+  ghost.style.left=(r.left+60)+'px';ghost.style.width=(r.width-110)+'px';ghost.style.top=r.top+'px';document.body.appendChild(ghost);
+  line.classList.add('lift');try{g.setPointerCapture(e.pointerId)}catch(err){}
+  DG={from:+line.dataset.d,line,ghost,off:e.clientY-r.top,id:e.pointerId,to:null,timer:null};
+});
+document.addEventListener('pointermove',e=>{
+  if(!DG||e.pointerId!==DG.id)return;
+  DG.ghost.style.top=(e.clientY-DG.off)+'px';
+  const t=document.elementFromPoint(e.clientX,e.clientY)?.closest('.wkline');
+  document.querySelectorAll('.wkline.drop').forEach(x=>{if(x!==t)x.classList.remove('drop')});
+  DG.to=t&&t!==DG.line?+t.dataset.d:null;if(t&&t!==DG.line)t.classList.add('drop');
+  clearInterval(DG.timer);
+  if(e.clientY<90)DG.timer=setInterval(()=>window.scrollBy(0,-8),16);
+  else if(e.clientY>innerHeight-130)DG.timer=setInterval(()=>window.scrollBy(0,8),16);
+});
+function endDrag(e){
+  if(!DG||e.pointerId!==DG.id)return;const d=DG;DG=null;clearInterval(d.timer);d.ghost.remove();
+  document.querySelectorAll('.wkline.lift,.wkline.drop').forEach(x=>x.classList.remove('lift','drop'));
+  if(e.type==='pointercancel'||d.to==null||d.to===d.from)return;
+  const a=String(d.from),b=String(d.to),wa=S.schedule[a]||null,wb=S.schedule[b]||null;
+  S.schedule[a]=wb;S.schedule[b]=wa;persistProfile();scheduleMeta();
+  const y=window.scrollY;render();window.scrollTo(0,y);
+  undoToast(`${WDN[d.from]} e ${WDN[d.to].toLowerCase()} trocaram de treino`,()=>{S.schedule[a]=wa;S.schedule[b]=wb;persistProfile();const y2=window.scrollY;render();window.scrollTo(0,y2)});
+}
+document.addEventListener('pointerup',endDrag);document.addEventListener('pointercancel',endDrag);
+
 /* ================= Telas ================= */
 const app=document.getElementById('app');
 function render(){
@@ -2138,7 +2281,7 @@ function exRow(e,k,target,wid,idx,xp){
   const mine=d.logs.filter(l=>l.ex===e.id),n=mine.length;
   const last=lastEntry(e.id,k);
   const sub=n?`<span class="today-log">${k===today()?'Hoje':'Neste dia'}: ${setTxt(mine[n-1])}</span>`:last?`Última: ${setTxt(last.l)} · ${ddmm(last.k)}`:'Sem registro ainda';
-  if(wid){const on=isDone(k,e.id);return `<div class="irow ${on?'done':''}" style="${gc(e.group)}"><button class="tick ${on?'on':''}" data-act="tick" data-id="${e.id}" aria-pressed="${on}" aria-label="Marcar ${esc(e.name)} como feito"><span>✓</span></button><button class="row" data-act="log" data-id="${e.id}" data-w="${wid}" data-i="${idx}">${pic(e)}<div class="main"><div class="name">${esc(e.name)}</div>${target?`<div class="target num">${esc(target)}</div>`:''}${xp?`<div><span class="xpchip num">+${xp} XP</span></div>`:''}<div class="sub num">${sub}</div></div><span class="chev">›</span></button></div>`}
+  if(wid){const on=isDone(k,e.id);return `<div class="swp" data-w="${wid}" data-i="${idx}" data-ctx="page"><div class="swbg"><button data-act="swDel" tabindex="-1">Excluir</button></div><div class="irow ${on?'done':''}" style="${gc(e.group)}"><button class="tick ${on?'on':''}" data-act="tick" data-id="${e.id}" aria-pressed="${on}" aria-label="Marcar ${esc(e.name)} como feito"><span>✓</span></button><button class="row" data-act="log" data-id="${e.id}" data-w="${wid}" data-i="${idx}">${pic(e)}<div class="main"><div class="name">${esc(e.name)}</div>${target?`<div class="target num">${esc(target)}</div>`:''}${xp?`<div><span class="xpchip num">+${xp} XP</span></div>`:''}<div class="sub num">${sub}</div></div><span class="chev">›</span></button></div></div>`}
   return `<button class="row" style="${gc(e.group)}" data-act="log" data-id="${e.id}" ${wid?`data-w="${wid}" data-i="${idx}"`:''}>${pic(e)}<div class="main"><div class="name">${esc(e.name)}</div>${target?`<div class="target num">${esc(target)}</div>`:''}<div class="sub num">${sub}</div></div>${n?`<span class="badge">Feito${n>1?' ×'+n:''}</span>`:'<span class="chev">›</span>'}</button>`;
 }
 
@@ -2176,7 +2319,7 @@ function viewHoje(){
     ${timerBlock(k,d,w)}
     ${dayPhotoBlock(k)}
     ${!w?''
-      :w.items.length?`<div class="list">${rows}</div><p class="hint" style="margin:0">Toque no círculo para marcar como feito. Toque no nome para anotar carga e repetições.</p>`:`<div class="empty">Este treino ainda não tem exercícios. Adicione na aba Plano.</div>`}
+      :w.items.length?`<div class="list">${rows}</div><p class="hint" style="margin:0">Toque no círculo para marcar como feito. Toque no nome para anotar carga e repetições. Arraste pra esquerda pra tirar do treino.</p>`:`<div class="empty">Este treino ainda não tem exercícios. Adicione na aba Plano.</div>`}
   </div>
   ${actsBlock(k)}
   <div class="section">
@@ -2192,19 +2335,32 @@ function viewHoje(){
 }
 
 function viewPlano(){
-  const wd=new Date().getDay();
-  const week=WEEK.map(d=>{
-    const w=wById(S.schedule[String(d)]);
-    return `<button class="row wkrow ${d===wd?'today':''}" data-act="setDay" data-d="${d}"><span class="wdn">${WDS[d]}</span><div class="main">${w?`<div class="name">${esc(w.t)}</div>${pills(wGroups(w))}`:'<div class="name rest">Descanso</div>'}</div><span class="chev">›</span></button>`;
-  }).join('');
-  const wl=S.workouts.map(w=>`<button class="row" data-act="openW" data-id="${w.id}"><div class="main" style="display:flex;flex-direction:column;gap:5px"><div class="name">${esc(w.t)}</div>${pills(wGroups(w))}<div class="sub num">${w.items.length} ${w.items.length===1?'exercício':'exercícios'}${w.items.length?` · cerca de ${planMinutes(w)} min`:''}</div></div><span class="chev">›</span></button>`).join('');
+  const wd=new Date().getDay(),tab=ui.planTab||'planos',act=curPlan();
+  if(!ui.planOpen||!S.plans.some(p=>p.id===ui.planOpen))ui.planOpen=ui.planOpen===null?null:S.activePlan;
+  const weekRows=p=>{const isAct=p.id===S.activePlan,sc=planSched(p.id);return WEEK.map(d=>{
+    const w=wById(sc[String(d)]);
+    const inner=`<span class="wdn">${WDS[d]}</span><div class="main">${w?`<div class="name">${esc(w.t)}</div><div class="sub num">${w.items.length} ${w.items.length===1?'exercício':'exercícios'}${w.items.length?` · cerca de ${planMinutes(w)} min`:''}</div>${pills(wGroups(w))}`:'<div class="name rest">Descanso</div>'}</div>`;
+    if(isAct)return `<div class="irow wkline" data-d="${d}"><button class="row wkrow ${d===wd?'today':''}" data-act="dayOpen" data-d="${d}">${inner}</button><span class="grip" data-d="${d}" aria-hidden="true">${I_GRIP}</span></div>`;
+    return w?`<button class="row wkrow" data-act="openW" data-id="${w.id}">${inner}<span class="chev">›</span></button>`:`<div class="row wkrow">${inner}</div>`;
+  }).join('')};
+  const planMeta=p=>{const sc=planSched(p.id),n=planWorkouts(p.id).length,dd=WEEK.filter(d=>sc[String(d)]).length;return `${n} ${n===1?'treino':'treinos'} · ${dd} ${dd===1?'dia':'dias'} por semana`};
+  const ordered=[act,...S.plans.filter(p=>p.id!==act.id)];
+  const plansHtml=ordered.map(p=>{const open=ui.planOpen===p.id,isAct=p.id===S.activePlan;return `<section class="plan ${open?'open':''}">
+    <button class="plh" data-act="planToggle" data-id="${p.id}" aria-expanded="${open}"><span class="m"><span class="t"><b>${esc(p.name)}</b>${isAct?'<span class="ptag">Em uso</span>':''}</span><span class="sub num">${planMeta(p)}</span></span><span class="car">${I_CARET}</span></button>
+    ${open?`<div class="plb"><div class="list">${weekRows(p)}</div>
+      ${isAct?`<p class="hint" style="margin:0">Toque num dia pra ver ou mudar o treino. Arraste pelos pontinhos pra trocar o treino de dia.</p>`:`<button class="primary" data-act="planUse" data-id="${p.id}">Usar este plano</button>`}
+      <div class="plact"><button class="link" data-act="planRename" data-id="${p.id}">Renomear</button>${isAct?'':`<button class="link danger" data-act="planDel" data-id="${p.id}">Excluir plano</button>`}</div></div>`:''}
+  </section>`}).join('');
+  const wl=planWorkouts(act.id).map(w=>{const ds=WEEK.filter(d=>S.schedule[String(d)]===w.id);return `<button class="row" data-act="openW" data-id="${w.id}"><div class="main" style="display:flex;flex-direction:column;gap:5px"><div class="name">${esc(w.t)}</div>${pills(wGroups(w))}<div class="sub num">${w.items.length} ${w.items.length===1?'exercício':'exercícios'}${w.items.length?` · cerca de ${planMinutes(w)} min`:''}${ds.length?` · ${ds.map(d=>WDS[d]).join(', ')}`:' · sem dia na semana'}</div></div><span class="chev">›</span></button>`}).join('');
   return `
   ${brandHead()}
-  <div class="section"><div class="eyebrow">Plano</div><h1>Meu treino</h1>
-    ${S.bio&&S.bio.goal&&S.bio.goal!=='zero'?`<p class="muted">Montado para <b>${GOALS[S.bio.goal].n.toLowerCase()}</b> · ${S.bio.days} dias por semana · ${S.bio.level==='ini'?'iniciante':'já treina'}</p>`:''}
-    <button class="link" data-act="redoPlan" style="align-self:flex-start">Montar um plano novo pra mim</button></div>
-  <div class="section"><h3>Semana</h3><div class="list">${week}</div><p class="hint" style="margin:0">Toque num dia para escolher o treino dele.</p></div>
-  <div class="section"><h3>Treinos</h3><div class="list">${wl}<button class="row addrow" data-act="newW">+ Criar treino</button></div><p class="hint" style="margin:0">Toque num treino para trocar, adicionar ou tirar máquinas.</p></div>
+  <div class="section"><div class="eyebrow">Plano</div><h1>Meu plano</h1></div>
+  <div class="seg" role="tablist"><button role="tab" aria-selected="${tab==='planos'}" class="${tab==='planos'?'on':''}" data-act="planTab" data-v="planos">Meus planos</button><button role="tab" aria-selected="${tab==='treinos'}" class="${tab==='treinos'?'on':''}" data-act="planTab" data-v="treinos">Meus treinos</button></div>
+  ${tab==='planos'?`<div class="plans">${plansHtml}</div>
+    <button class="ghost" data-act="redoPlan">Montar um plano novo</button>
+    <p class="hint" style="margin:-6px 0 0;text-align:center">Cria mais um plano. Os que você já tem continuam salvos.</p>`
+  :`<p class="hint" style="margin:0">Treinos do plano <b>${esc(act.name)}</b>. Toque num treino pra trocar, adicionar ou tirar exercícios.</p>
+    <div class="list">${wl}<button class="row addrow" data-act="newW">+ Criar treino</button></div>`}
   ${acct()}`;
 }
 
@@ -2430,21 +2586,25 @@ function sheetSwap(){
   openSheet(`
     <div class="sheethead"><div><div class="eyebrow">${WDN[d]}${weekOnly?'':' · '+ddmm(k)}</div><h2>Escolher treino</h2></div>${closeBtn()}</div>
     ${weekOnly?'':`<div class="seg"><button class="${scope==='dia'?'on':''}" data-act="scope" data-s="dia">Só neste dia</button><button class="${scope==='semana'?'on':''}" data-act="scope" data-s="semana">Toda ${WDN[d].toLowerCase()}${d===0||d===6?'':'-feira'}</button></div>`}
-    <div class="list">${S.workouts.map(w=>opt(w.id,w.t,pills(wGroups(w)))).join('')}${opt('','Descanso','')}</div>
+    <div class="list">${planWorkouts(S.activePlan).map(w=>opt(w.id,w.t,pills(wGroups(w)))).join('')}${opt('','Descanso','')}</div>
     ${!weekOnly&&S.days[k]?.w?`<button class="ghost" data-act="clearSwap">Voltar ao treino normal de ${WDN[d].toLowerCase()}</button>`:''}`);
 }
 
 // Editor de um treino
-function sheetWorkout(wid){
+function sheetWorkout(wid,day){
   const w=wById(wid);if(!w)return closeSheet();
+  if(day!==undefined)ui.editDay=day;else if(ui.editW!==wid)ui.editDay=null;
+  const dd=ui.editDay,others=dd==null?[]:WEEK.filter(x=>x!==dd&&S.schedule[String(x)]===wid);
   const n=w.items.length;
-  const items=w.items.map((it,i)=>{const e=exById(it.ex);return `<div class="irow" style="${e?gc(e.group):''}"><button class="row" data-act="editItem" data-w="${wid}" data-i="${i}" data-ret="workout">${pic(e)}<div class="main"><div class="name">${esc(e?e.name:'Exercício removido')}</div><div class="target num">${esc(targetTxt(it))}</div></div></button><div class="mv"><button data-act="mvItem" data-i="${i}" data-n="-1" ${i===0?'disabled':''} aria-label="Subir">▲</button><button data-act="mvItem" data-i="${i}" data-n="1" ${i===n-1?'disabled':''} aria-label="Descer">▼</button></div></div>`}).join('');
+  const items=w.items.map((it,i)=>{const e=exById(it.ex);return `<div class="swp" data-w="${wid}" data-i="${i}" data-ctx="sheet"><div class="swbg"><button data-act="swDel" tabindex="-1">Excluir</button></div><div class="irow" style="${e?gc(e.group):''}"><button class="row" data-act="editItem" data-w="${wid}" data-i="${i}" data-ret="workout">${pic(e)}<div class="main"><div class="name">${esc(e?e.name:'Exercício removido')}</div><div class="target num">${esc(targetTxt(it))}</div></div></button><div class="mv"><button data-act="mvItem" data-i="${i}" data-n="-1" ${i===0?'disabled':''} aria-label="Subir">▲</button><button data-act="mvItem" data-i="${i}" data-n="1" ${i===n-1?'disabled':''} aria-label="Descer">▼</button></div></div></div>`}).join('');
   ui.editW=wid;
   openSheet(`
-    <div class="sheethead"><div><div class="eyebrow">Treino</div></div>${closeBtn()}</div>
+    <div class="sheethead"><div><div class="eyebrow">${dd!=null?WDN[dd]+(dd===new Date().getDay()?' · hoje':''):'Treino'}</div></div>${closeBtn()}</div>
+    ${others.length?`<p class="note2">Esse treino também está ${others.length===1?'na':'em'} ${others.map(x=>WDN[x].toLowerCase()).join(' e ')}. Mudanças nos exercícios valem pra todos esses dias.</p>`:''}
     <div class="field"><label for="wTitle">Nome do treino</label><input type="text" id="wTitle" class="wtitle" value="${esc(w.t)}" autocomplete="off"></div>
     <div class="list">${items}<button class="row addrow" data-act="editItem" data-w="${wid}" data-i="-1" data-ret="workout">+ Adicionar exercício</button></div>
-    <p class="hint" style="margin:0">Toque num exercício para trocar a máquina, as séries ou as repetições. Use as setas para mudar a ordem.</p>
+    <p class="hint" style="margin:0">Toque num exercício para trocar a máquina, as séries ou as repetições. Use as setas para mudar a ordem. Arraste pra esquerda pra tirar do treino.</p>
+    ${dd!=null?`<button class="ghost" data-act="setDay" data-d="${dd}">Trocar o treino de ${WDN[dd].toLowerCase()}</button>`:''}
     <button class="ghost danger" data-act="delW" data-id="${wid}">Excluir este treino</button>`);
 }
 
@@ -2525,18 +2685,23 @@ document.addEventListener('click',ev=>{
     if(id==='dur')setShareDur();
     return;
   }
-  if(a==='start'){const d=dayOf(ui.date);d.start=Date.now();delete d.end;delete d.dur;d.checked=true;persistDay(ui.date);render();toast('Bom treino!');return}
+  if(a==='start'){const d=dayOf(ui.date);d.start=Date.now();delete d.end;delete d.dur;delete d.manual;d.checked=true;persistDay(ui.date);render();toast('Bom treino!');return}
   if(a==='restart'){
     const d=dayOf(ui.date),m=durMin(d);
     openSheet(`
       <div class="sheethead"><div><div class="eyebrow">Treino finalizado${m?` · ${m} min`:''}</div><h2>Reiniciar treino</h2></div>${closeBtn()}</div>
       <p class="note2">Seus checks e as cargas registradas continuam salvos. Só o cronômetro muda.</p>
       ${m?`<button class="primary" data-act="resume">Continuar de onde parou (${m} min)</button>`:''}
-      <button class="${m?'ghost':'primary'}" data-act="restartZero">Começar o cronômetro do zero</button>`);
+      <button class="${m?'ghost':'primary'}" data-act="restartZero">Zerar cronômetro</button>
+      <p class="hint" style="margin:0">Zerando, o cronômetro só volta a contar quando você tocar em Iniciar treino.</p>`);
     return;
   }
-  if(a==='resume'){const d=dayOf(ui.date),m=durMin(d)||0;d.start=Date.now()-m*60000;delete d.end;delete d.dur;persistDay(ui.date);closeSheet();render();toast('Treino retomado');return}
-  if(a==='restartZero'){const d=dayOf(ui.date);d.start=Date.now();delete d.end;delete d.dur;persistDay(ui.date);closeSheet();render();toast('Cronômetro zerado. Bom treino!');return}
+  if(a==='resume'){const d=dayOf(ui.date),m=durMin(d)||0;d.start=Date.now()-m*60000;delete d.end;delete d.dur;delete d.manual;persistDay(ui.date);closeSheet();render();toast('Treino retomado');return}
+  if(a==='zeroAsk'){openSheet(`<div class="sheethead"><div><h2>Zerar cronômetro?</h2></div>${closeBtn()}</div>
+      <p class="note2">O cronômetro volta pra 00:00 e só começa quando você tocar em Iniciar treino. Seus checks e as cargas registradas continuam salvos.</p>
+      <button class="primary" data-act="restartZero">Zerar</button>
+      <button class="ghost" data-act="close">Continuar contando</button>`);return}
+  if(a==='restartZero'){const d=dayOf(ui.date);delete d.start;delete d.end;delete d.dur;d.manual=true;persistDay(ui.date);closeSheet();render();toast('Cronômetro zerado');return}
   if(a==='finish'){const d=dayOf(ui.date);d.end=Date.now();persistDay(ui.date);render();return openShare(ui.date)}
   if(a==='share')return openShare(b.dataset.k);
   if(a==='shareOpt'){ui.share[b.dataset.f]=b.dataset.v;return sheetShare()}
@@ -2583,8 +2748,19 @@ document.addEventListener('click',ev=>{
   }
   if(a==='clearSwap'){const {k}=ui.swap;if(S.days[k])delete S.days[k].w;persistDay(k);ui.group=null;closeSheet();render();return}
   // editar treinos
-  if(a==='openW')return sheetWorkout(b.dataset.id);
-  if(a==='newW'){const w={id:newId(),t:'Novo treino',items:[]};S.workouts.push(w);persistProfile();render();sheetWorkout(w.id);setTimeout(()=>{const i=document.getElementById('wTitle');i&&(i.focus(),i.select())},60);return}
+  if(a==='openW')return sheetWorkout(b.dataset.id,null);
+  if(a==='dayOpen'){const d=+b.dataset.d,wid=S.schedule[String(d)];if(wid&&wById(wid))return sheetWorkout(wid,d);ui.swap={k:null,d,weekOnly:true,scope:'semana'};return sheetSwap()}
+  if(a==='planTab'){ui.planTab=b.dataset.v;render();return}
+  if(a==='planToggle'){const id=b.dataset.id;ui.planOpen=ui.planOpen===id?null:id;const y=window.scrollY;render();window.scrollTo(0,y);return}
+  if(a==='planUse'){usePlan(b.dataset.id);closeSheet();return}
+  if(a==='planRename'){const pl=S.plans.find(x=>x.id===b.dataset.id);if(!pl)return;ui.renP=pl.id;openSheet(`<div class="sheethead"><div><h2>Renomear plano</h2></div>${closeBtn()}</div><div class="field"><label for="pName">Nome do plano</label><input type="text" id="pName" value="${esc(pl.name)}" maxlength="30" autocomplete="off"></div><button class="primary" data-act="planRenameSave">Salvar</button>`);setTimeout(()=>{const i=document.getElementById('pName');i&&(i.focus(),i.select())},60);return}
+  if(a==='planRenameSave'){const pl=S.plans.find(x=>x.id===ui.renP),v=(document.getElementById('pName')?.value||'').trim();if(!pl)return closeSheet();if(!v){toast('Dê um nome pro plano');return}pl.name=v.slice(0,30);persistProfile();closeSheet();render();toast('Plano renomeado');return}
+  if(a==='planDel'){
+    if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Toque de novo pra excluir';return}
+    const id=b.dataset.id;if(id===S.activePlan)return;const pl=S.plans.find(x=>x.id===id);
+    S.plans=S.plans.filter(x=>x.id!==id);persistProfile();ui.planOpen=S.activePlan;render();toast(`Plano ${pl?pl.name:''} excluído`);return;
+  }
+  if(a==='newW'){const w={id:newId(),t:'Novo treino',items:[],p:S.activePlan};S.workouts.push(w);persistProfile();render();sheetWorkout(w.id);setTimeout(()=>{const i=document.getElementById('wTitle');i&&(i.focus(),i.select())},60);return}
   if(a==='mvItem'){const w=wById(ui.editW),i=+b.dataset.i,j=i+(+b.dataset.n);if(!w||j<0||j>=w.items.length)return;[w.items[i],w.items[j]]=[w.items[j],w.items[i]];persistProfile();render();return sheetWorkout(w.id)}
   if(a==='delW'){
     if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Toque de novo para excluir';return}
