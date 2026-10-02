@@ -627,6 +627,8 @@ const CATALOG=[
   ['mountain-climber','Mountain climber','Funcional','iso'],['polichinelo','Polichinelo','Funcional','reps'],['corda-naval','Corda naval','Funcional','iso'],['wall-ball','Wall ball','Funcional'],
   ['farmer-walk','Farmer walk','Funcional'],['thruster','Thruster','Funcional'],['pular-corda','Pular corda','Funcional','iso'],
   ['esteira','Caminhada na esteira inclinada','Cardio','tempo'],['bike','Bicicleta ergométrica','Cardio','tempo'],['eliptico','Elíptico','Cardio','tempo'],
+  // Máquinas e polias (adicionadas em out/2026)
+  ['supino-maquina','Supino máquina','Peito'],['supino-inclinado-maquina','Supino inclinado máquina','Peito'],['supino-smith','Supino no Smith','Peito'],['crossover-baixo','Crossover polia baixa','Peito'],['remada-maquina','Remada máquina (articulada)','Costas'],['puxada-triangulo','Puxada com triângulo','Costas'],['puxada-supinada','Puxada supinada','Costas'],['remada-cavalinho','Remada cavalinho','Costas'],['graviton','Barra fixa assistida (graviton)','Costas'],['lombar','Extensão lombar no banco','Costas'],['elevacao-lateral-maquina','Elevação lateral máquina','Ombros'],['elevacao-lateral-polia','Elevação lateral na polia','Ombros'],['desenvolvimento-smith','Desenvolvimento no Smith','Ombros'],['face-pull','Face pull na polia','Ombros'],['crucifixo-inverso-maquina','Crucifixo inverso no peck deck','Ombros'],['rosca-maquina','Rosca bíceps máquina','Bíceps'],['rosca-polia','Rosca na polia','Bíceps'],['rosca-w','Rosca com barra W','Bíceps'],['triceps-maquina','Tríceps máquina','Tríceps'],['triceps-unilateral-polia','Tríceps unilateral na polia','Tríceps'],['triceps-frances-polia','Tríceps francês na polia','Tríceps'],['leg-press-horizontal','Leg press horizontal','Quadríceps'],['pendulo','Agachamento pêndulo','Quadríceps'],['afundo-smith','Afundo no Smith','Quadríceps'],['flexora-em-pe','Flexora em pé','Posterior'],['stiff-smith','Stiff no Smith','Posterior'],['gluteo-maquina','Glúteo na máquina (coice)','Glúteos'],['elevacao-pelvica-maquina','Elevação pélvica máquina','Glúteos'],['adutora','Cadeira adutora','Glúteos'],['abdutora-em-pe','Abdução de quadril na polia','Glúteos'],['panturrilha-leg','Panturrilha no leg press','Panturrilha'],['panturrilha-smith','Panturrilha no Smith','Panturrilha'],['abdominal-polia','Abdominal na polia (corda)','Abdômen'],['rotacao-tronco','Rotação de tronco na máquina','Abdômen'],['escada','Escada (simulador)','Cardio','tempo'],['remo','Remo ergométrico','Cardio','tempo'],['esteira-corrida','Corrida na esteira','Cardio','tempo'],
   ['along-inferior','Alongamento de pernas e quadril','Alongamento','tempo'],['along-superior','Alongamento de costas, peito e ombros','Alongamento','tempo'],['mobilidade','Mobilidade de quadril e coluna','Alongamento','tempo']
 ];
 /* Desenhos dos aparelhos: todos no mesmo estilo (64×64). eq = aparelho, o = anilhas/halteres (x,y,raio),
@@ -726,7 +728,8 @@ Object.assign(PICS,{
   'thruster':{eq:'M4 57h56',o:'31,5,6',j:'h:36,17 s:31,24 p:24,41 k:40,44 f:34,56 e:32,15 w:31,6'},
   'pular-corda':{front:1,eq:'M22 33C6 72 58 72 42 33',j:'h:32,10 s:32,17 p:32,34 e:26,26 w:22,33 e2:38,26 w2:42,33 k:30,44 f:30,52 k2:34,44 f2:34,52'}
 });
-const PIC_ALIAS={'desenvolvimento-halteres':'desenvolvimento'};
+PICS['lombar']={eq:'M28 40l10-6M36 37v19M46 52h10M4 57h56',j:'h:13,40 s:19,40 p:35,36 k:45,46 f:53,53 e:20,32 w:24,27'};
+const PIC_ALIAS={'desenvolvimento-halteres':'desenvolvimento','supino-maquina':'supino-reto','supino-inclinado-maquina':'supino-inclinado','supino-smith':'supino-reto','crossover-baixo':'crossover','remada-maquina':'remada-baixa','puxada-triangulo':'puxada-frontal','puxada-supinada':'puxada-frontal','remada-cavalinho':'remada-curvada','graviton':'barra-fixa','elevacao-lateral-maquina':'elevacao-lateral','elevacao-lateral-polia':'elevacao-lateral','desenvolvimento-smith':'desenvolvimento','face-pull':'crucifixo-inverso','crucifixo-inverso-maquina':'crucifixo-inverso','rosca-maquina':'rosca-scott','rosca-polia':'rosca-direta','rosca-w':'rosca-direta','triceps-maquina':'mergulho-banco','triceps-unilateral-polia':'triceps-pulley','triceps-frances-polia':'triceps-frances','leg-press-horizontal':'leg-press','pendulo':'hack','afundo-smith':'afundo','flexora-em-pe':'cadeira-flexora','stiff-smith':'stiff','gluteo-maquina':'gluteo-4apoios','elevacao-pelvica-maquina':'elevacao-pelvica','adutora':'abdutora','abdutora-em-pe':'gluteo-cabo','panturrilha-leg':'leg-press','panturrilha-smith':'panturrilha-pe','abdominal-polia':'abdominal-maquina','rotacao-tronco':'abdominal-maquina','escada':'esteira','remo':'remada-baixa','esteira-corrida':'esteira'};
 const picCache={};
 function picSvg(id){
   if(picCache[id])return picCache[id];
@@ -801,8 +804,9 @@ function ensureDefaults(){
   if(!S.schedule){S.schedule={...DEFAULT_SCHEDULE};ch=true}
   if(!Array.isArray(S.groups))S.groups=[];
   if((S.v||3)<6){for(const d of Object.values(CAT)){if(!S.exercises.some(e=>e.id===d.id||norm(e.name)===norm(d.name))){S.exercises.push({...d});ch=true}}}
+  if((S.v||3)<7){for(const d of Object.values(CAT)){if(!S.exercises.some(e=>e.id===d.id||norm(e.name)===norm(d.name))){S.exercises.push({...d});ch=true}}}
   if((S.v||3)<5){for(const w of S.workouts||[])if(w.t==='Pernas'||w.t==='Treino de inferiores'){w.t='Inferiores';ch=true}S.v=5}
-  S.v=Math.max(6,S.v||6);return ch;
+  S.v=Math.max(7,S.v||7);return ch;
 }
 let DP={};try{DP=JSON.parse(localStorage.getItem(LS+'-dayphotos')||'{}')||{}}catch(e){}
 let PH={};try{PH=JSON.parse(localStorage.getItem(LS+'-photos')||'{}')||{}}catch(e){}
