@@ -40,6 +40,35 @@ for (const doc of (await db.collectionGroup('meta').get()).docs) {
   if (doc.id === 'push') metas[uid] = doc.data();
   if (doc.id === 'sent') sents[uid] = doc.data();
 }
+// Bom dia com o treino do dia: uma frase por tipo de treino, variando de dia pra dia.
+const FRASES = {
+  gluteos: ['Bora! Hoje é dia de deixar o bumbum da Graciane Barbosa no chinelo 🍑', 'Dia de glúteo: a escada do metrô que se prepare 🍑', 'Hoje é dia de glúteo. Calça jeans, aguenta firme 🍑'],
+  pernas: ['Hoje é dia de perna. Amanhã sentar no vaso vai ser um evento 🦵', 'Dia de perna, e pular o dia de perna não é uma opção 🦵', 'Hoje tem perna. Bora construir as colunas que sustentam esse corpinho 🦵'],
+  bracos: ['Hoje é dia de treinar pra conseguir trocar o galão de água do filtro sem pedir ajuda. Força nos braços 💪', 'Dia de braço: a manga da camiseta que lute 💪', 'Hoje tem braço. Pote de azeitona difícil de abrir, seus dias estão contados 💪'],
+  costas: ['Dia de costas: postura de quem manda na reunião 😎', 'Hoje é dia de costas. Mochila pesada? Nunca mais 🎒', 'Costas hoje. Bora ficar com aquele V de respeito 😎'],
+  cardio: ['Hoje é dia de cardio. Correr atrás do ônibus vai virar aquecimento 🏃', 'Cardio hoje: seu coração agradece e sua playlist também 🎧', 'Dia de suar a camisa. Bora gastar essa energia toda 🔥'],
+  descanso: ['Hoje é dia de descanso. Músculo também cresce no sofá, pode confiar 🛋️', 'Dia de descanso: hoje o único peso que você levanta é o controle da TV 📺', 'Descanso hoje. Seus músculos pediram folga e o KOVA aprovou 😴', 'Hoje é folga! Aproveita pra beber água, dormir bem e voltar com tudo amanhã 💧'],
+  todo: ['Hoje é treino de corpo inteiro. Nenhum músculo vai sair ileso 🔥', 'Corpo todo hoje: é o combo completo, sem pular nada 🔥', 'Hoje trabalha tudo. Bora fazer valer o café da manhã ☕'],
+};
+const LOW = ['Glúteos', 'Quadríceps', 'Posterior', 'Panturrilha'], UP = ['Peito', 'Ombros', 'Bíceps', 'Tríceps'];
+function tipoTreino(titulo, grupos = []) {
+  const g = grupos.filter(x => x !== 'Abdômen'), t = (titulo || '').toLowerCase();
+  const low = g.filter(x => LOW.includes(x)).length, up = g.filter(x => UP.includes(x)).length, back = g.includes('Costas');
+  if (!g.length || g.every(x => x === 'Cardio' || x === 'Alongamento' || x === 'Funcional')) return 'cardio';
+  if (low && (up || back)) return 'todo';
+  if (g[0] === 'Glúteos' || t.includes('glúte') || t.includes('glute')) return 'gluteos';
+  if (low) return 'pernas';
+  if (back && !up) return 'costas';
+  if (back && g[0] === 'Costas') return 'costas';
+  return 'bracos';
+}
+function bomDia(m, L) {
+  const tipo = m.plan[L.wd] ? tipoTreino(m.plan[L.wd], (m.planG || {})[L.wd]) : 'descanso', lista = FRASES[tipo];
+  const dia = Math.floor(Date.parse(L.key) / 864e5), frase = lista[dia % lista.length];
+  const nome = (m.name || '').trim().split(/\s+/)[0];
+  return `Bom dia${nome ? ', ' + nome : ''}! ${frase}`;
+}
+
 const amigos = {};
 for (const g of (await db.collection('groups').get()).docs) {
   const ms = g.get('members') || [];
@@ -51,16 +80,24 @@ for (const [uid, m] of Object.entries(metas)) {
   const tokens = m.tokens || [];
   if (!tokens.length) continue;
   const L = local(m.tz);
-  if (L.hour < 8 || L.hour >= 22) continue; // não incomoda de madrugada
-  const P = { amigos: true, lembrete: true, xp: true, ...(m.prefs || {}) };
+  if (L.hour < 7 || L.hour >= 22) continue; // não incomoda de madrugada
+  const P = { bomdia: true, amigos: true, lembrete: true, xp: true, ...(m.prefs || {}) };
   const pausado = m.pausedUntil && m.pausedUntil >= L.key;
   const treinou = m.lastDay === L.key;
   let s = sents[uid];
-  if (!s || s.day !== L.key) s = { day: L.key, friends: [], nFriends: 0, lastFriendAt: 0, reminder: false, xp: false };
+  if (!s || s.day !== L.key) s = { day: L.key, friends: [], nFriends: 0, lastFriendAt: 0, reminder: false, xp: false, morning: false };
   let msg = null;
+  const treinoHoje = m.plan && m.plan[L.wd];
+
+  // 0. Bom dia (7h–11h): o treino de hoje ou, no dia de descanso, uma frase de folga. Só pra quem tem plano montado.
+  if (P.bomdia && !pausado && !treinou && !s.morning && m.plan && Object.keys(m.plan).length && L.hour < 11) {
+    msg = { body: bomDia(m, L), tag: 'bomdia' };
+    s.morning = true;
+  }
+  if (!msg && L.hour < 8) continue; // antes das 8h só o bom dia
 
   // 1. "Ana já treinou hoje. E você?" — no máximo 2 por dia, com 2 horas entre elas.
-  if (P.amigos && !treinou && s.nFriends < 2 && now - s.lastFriendAt >= 2 * HORA) {
+  if (!msg && P.amigos && !treinou && s.nFriends < 2 && now - s.lastFriendAt >= 2 * HORA) {
     const novos = [...(amigos[uid] || [])].filter(f => metas[f] && metas[f].lastDay === L.key
       && (metas[f].prefs || {}).share !== false && !s.friends.includes(f));
     if (novos.length) {
@@ -69,7 +106,6 @@ for (const [uid, m] of Object.entries(metas)) {
     }
   }
   // 2. Lembrete às 18h nos dias com treino no plano.
-  const treinoHoje = m.plan && m.plan[L.wd];
   if (!msg && P.lembrete && !treinou && !pausado && !s.reminder && L.hour >= 18 && treinoHoje) {
     msg = { body: `Hoje é dia de ${treinoHoje}. Ainda dá tempo! 🔥`, tag: 'lembrete' };
     s.reminder = true;
