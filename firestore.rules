@@ -11,6 +11,31 @@ service cloud.firestore {
       allow read, write: if signedIn() && request.auth.uid == uid;
     }
 
+    // Professor: o aluno libera em users/<aluno>/meta/coach. Aí o professor pode ler
+    // só o perfil e os dias de treino (nunca fotos nem notificações).
+    function isCoachOf(uid) {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(uid)/meta/coach)
+        && request.auth.uid in get(/databases/$(database)/documents/users/$(uid)/meta/coach).data.coaches;
+    }
+    match /users/{uid}/data/{doc} {
+      allow get: if doc == 'profile' && isCoachOf(uid);
+      allow list: if isCoachOf(uid) && resource.data.kind == 'day';
+    }
+
+    // Planos enviados por professores: quem tem o link lê; só o professor cria e muda.
+    match /coachPlans/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.coach == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.coach == request.auth.uid;
+    }
+
+    // Lista de alunos do professor: o aluno se adiciona; os dois podem remover.
+    match /coaches/{cid}/students/{sid} {
+      allow read: if signedIn() && (request.auth.uid == cid || request.auth.uid == sid);
+      allow create, update: if signedIn() && request.auth.uid == sid;
+      allow delete: if signedIn() && (request.auth.uid == cid || request.auth.uid == sid);
+    }
+
     // Códigos de convite: qualquer pessoa logada pode procurar um código.
     match /codes/{code} {
       allow get: if signedIn();

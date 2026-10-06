@@ -890,7 +890,7 @@ function persistDayPhoto(k){
   else if(!okLocal)toast('A memória do navegador encheu. Entre com sua conta Google pra guardar mais fotos.');
 }
 function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
-const profileBody=()=>({v:S.v,goal:S.goal,nick:S.nick||'',onb:S.onb!==false,bio:S.bio||null,groups:S.groups||[],quiz:S.quiz||null,avatar:S.avatar||'',xpPublic:!!S.xpPublic,pause:S.pause||null,pauses:S.pauses||[],notif:S.notif||null,plans:S.plans||null,activePlan:S.activePlan||null,exercises:S.exercises,workouts:S.workouts,schedule:S.schedule});
+const profileBody=()=>({v:S.v,goal:S.goal,nick:S.nick||'',onb:S.onb!==false,bio:S.bio||null,groups:S.groups||[],quiz:S.quiz||null,avatar:S.avatar||'',xpPublic:!!S.xpPublic,pause:S.pause||null,pauses:S.pauses||[],notif:S.notif||null,coach:!!S.coach,plans:S.plans||null,activePlan:S.activePlan||null,exercises:S.exercises,workouts:S.workouts,schedule:S.schedule});
 function persistProfile(){saveLocal();scheduleMeta();if(backend.col)queueWrite('profile',profileBody())}
 function persistDay(k){
   saveLocal();scheduleStats();if(!backend.col)return;
@@ -937,7 +937,7 @@ async function attach(col,skipCache){
     if(!s.exists||(skipCache&&s.metadata.fromCache)||pending.profile||busy.profile)return;
     const d=JSON.parse(JSON.stringify(s.data()));
     if(Array.isArray(d.exercises))S.exercises=d.exercises;
-    S.goal=d.goal||S.goal;S.v=d.v||1;S.nick=d.nick||'';S.workouts=d.workouts;S.schedule=d.schedule;S.onb=d.onb!==false;S.bio=d.bio||null;S.quiz=d.quiz||null;S.avatar=d.avatar||'';S.xpPublic=!!d.xpPublic;S.pause=d.pause||null;S.pauses=Array.isArray(d.pauses)?d.pauses:[];S.notif=d.notif||null;S.plans=Array.isArray(d.plans)?d.plans:null;S.activePlan=d.activePlan||null;const gOld=JSON.stringify(S.groups||[]);S.groups=Array.isArray(d.groups)?d.groups:[];if(gOld!==JSON.stringify(S.groups)&&fb.uid)loadGroups();
+    S.goal=d.goal||S.goal;S.v=d.v||1;S.nick=d.nick||'';S.workouts=d.workouts;S.schedule=d.schedule;S.onb=d.onb!==false;S.bio=d.bio||null;S.quiz=d.quiz||null;S.avatar=d.avatar||'';S.xpPublic=!!d.xpPublic;S.pause=d.pause||null;S.pauses=Array.isArray(d.pauses)?d.pauses:[];S.notif=d.notif||null;S.coach=!!d.coach;S.plans=Array.isArray(d.plans)?d.plans:null;S.activePlan=d.activePlan||null;const gOld=JSON.stringify(S.groups||[]);S.groups=Array.isArray(d.groups)?d.groups:[];if(gOld!==JSON.stringify(S.groups)&&fb.uid)loadGroups();
     if(ensureDefaults())persistProfile();else saveLocal();
     render();
   },()=>{}));
@@ -1517,7 +1517,7 @@ function viewOnboarding(){
     <p class="hint" style="margin:0">Você monta os seus próprios treinos na aba Plano.</p></div>
   ${ui.redo?'<button class="ghost" data-act="obCancel">Cancelar</button>':''}`;
 }
-function obDone(msg){S.onb=true;ui.redo=false;ui.ob=null;ui.tab='plano';persistProfile();render();window.scrollTo(0,0);toast(msg)}
+function obDone(msg){S.onb=true;ui.redo=false;ui.ob=null;ui.tab='plano';persistProfile();render();window.scrollTo(0,0);toast(msg);setTimeout(maybePlanInvite,900)}
 
 /* ================= Timer de descanso ================= */
 const rest={end:0,total:0,iv:null,ctx:null,done:false};
@@ -1558,6 +1558,7 @@ function groupsOff(){G.unsubs.forEach(u=>{try{u()}catch(e){}});G.unsubs=[];G.lis
 function afterLogin(){
   loadGroups();scheduleStats();refreshPush();setTimeout(maybeAskNotif,1800);
   if(ui.pendingCode){const c=ui.pendingCode;ui.pendingCode=null;setTimeout(()=>sheetJoin(c),400)}
+  setTimeout(maybePlanInvite,700);setTimeout(checkCoachUpdates,1500);if(S.coach)subStudents();
 }
 async function loadGroups(){
   if(!fb.fs||!fb.uid)return;
@@ -1724,6 +1725,14 @@ function avHtml(photo,name,cls){
 }
 function whenTxt(k){const t=today();return k===t?'hoje':k===addDays(t,-1)?'ontem':ddmm(k)}
 function viewAmigos(){
+  if(S.coach&&ui.sync==='google'){
+    const seg=`<div class="seg"><button class="${ui.amTab!=='alunos'?'on':''}" data-act="amTab" data-v="amigos">Amigos</button><button class="${ui.amTab==='alunos'?'on':''}" data-act="amTab" data-v="alunos">Alunos${CO.students.length?` · ${CO.students.length}`:''}</button></div>`;
+    if(ui.amTab==='alunos')return ui.student?viewStudent():brandHead()+`<div class="section"><div class="eyebrow">Professor</div><h1>Meus alunos</h1></div>`+seg+viewStudents();
+    return viewAmigosInner().replace('<h1>Treinar junto</h1></div>','<h1>Treinar junto</h1></div>'+seg);
+  }
+  return viewAmigosInner();
+}
+function viewAmigosInner(){
   const head=brandHead()+`<div class="section"><div class="eyebrow">Amigos</div><h1>Treinar junto</h1></div>`;
   if(ui.sync!=='google')return head+`<div class="empty">Crie um grupo com suas amigas, veja o ranking da semana e os treinos de todo mundo no feed.</div>${fb.ready?`<button class="gbtn" data-act="signin">${GICON}Entrar com Google pra começar</button>`:''}`;
   if(!S.groups.length)return head+`<div class="empty">Você ainda não está em nenhum grupo. Crie um e mande o convite pras amigas, ou entre com o código que alguém te mandou.</div>
@@ -1785,6 +1794,7 @@ function viewEvo(){
 }
 
 /* Convite por link: ?convite=CODIGO */
+try{const t=new URLSearchParams(location.search).get('treino');if(t){ui.pendingPlan=t.slice(0,40);history.replaceState(null,'',location.pathname)}}catch(e){}
 try{const c=new URLSearchParams(location.search).get('convite');if(c){ui.pendingCode=c.toUpperCase().slice(0,6);history.replaceState(null,'',location.pathname)}}catch(e){}
 
 /* Ações novas (primeiro acesso, descanso, grupos) */
@@ -2098,6 +2108,8 @@ function viewQuizAsk(){
     <p class="muted">${novo?'Algumas perguntas rápidas pra montar seu treino do jeito certo e definir o nível em que você começa.':'O KOVA agora tem níveis, XP por área do corpo e molduras. Responda uma vez pra definir o nível em que você começa. Seu plano e seu histórico continuam iguais.'} Não existe resposta errada.</p></div>
   ${novo&&fb.ready&&ui.sync!=='google'?`<div class="banner"><p><b>Já usa o KOVA?</b> Entre com a mesma conta Google pra recuperar seus treinos.</p><button class="gbtn" data-act="signin">${GICON}Entrar com Google</button></div>`:''}
   ${ui.pendingCode&&ui.sync!=='google'?`<div class="banner"><p><b>Você foi convidada pra um grupo!</b> Responda e depois entre com Google pra participar.</p></div>`:''}
+  ${ui.pendingPlan?`<div class="banner"><p><b>Seu professor te mandou um treino!</b> Responda e entre com Google pra receber.</p></div>`:''}
+  <button class="card switch" data-act="qCoach"><span class="sl"><b>Sou personal trainer</b><span>Quero montar treinos pros meus alunos e acompanhar a evolução deles.</span></span><i class="sw ${S.coach?'on':''}"></i></button>
   <section class="card" style="display:flex;flex-direction:column;gap:12px;padding:18px"><span class="eyebrow">Sobre você</span>
     ${brow('age','Idade','anos',q.age)}${brow('w','Peso','kg',q.w)}${brow('h','Altura','cm',q.h)}
     <div class="qnote"><b style="color:var(--accent)">IMC ${fmt(b)}</b> · <span class="muted">${ageNote(q.age)}</span></div></section>
@@ -2229,6 +2241,7 @@ function viewPerfil(){
     <div class="stat"><span class="v num ${st.prs?'up':''}">${st.prs}</span><span class="l">Recordes batidos</span></div>
     <div class="stat"><span class="v num">${st.bestRun}<small> sem.</small></span><span class="l">Maior sequência</span></div>
   </div>
+  ${coachProfileBlock()}
   <button class="card switch" data-act="xpPublic"><span class="sl"><b>XP público pros amigos</b><span>${S.xpPublic?'Quem está nos seus grupos vê seu nível e o XP por área.':'Só você vê seu XP. Nos grupos aparecem só os dias de treino.'}</span></span><i class="sw ${S.xpPublic?'on':''}"></i></button>
   <button class="card switch" data-act="pause"><span class="sl"><b>Modo pausa</b><span>${paused?`XP congelado até ${ddmm(addDays(S.pause,30))}. Desligue quando voltar a treinar.`:'Férias, lesão ou doença? Congela seu XP por até 30 dias.'}</span></span><i class="sw ${paused?'on':''}"></i></button>
   ${notifSection()}
@@ -2271,6 +2284,7 @@ document.addEventListener('click',ev=>{
   const b=ev.target.closest('[data-act]');if(!b)return;
   const a=b.dataset.act;
   if(a==='theme'){let t=curTheme()==='dark'?'light':'dark';try{localStorage.setItem('kova-theme',t)}catch(e){}applyTheme();render();return}
+  if(a==='qCoach'){S.coach=!S.coach;saveLocal();const y=window.scrollY;render();window.scrollTo(0,y);return}
   if(a==='qAns'){ui.q.ans[+b.dataset.i]=+b.dataset.a;const y=window.scrollY;render();window.scrollTo(0,y);return}
   if(a==='qStep'){const k=b.dataset.k,n=+b.dataset.n,lim={age:[12,90],w:[30,250],h:[120,220]}[k];ui.q[k]=Math.min(lim[1],Math.max(lim[0],ui.q[k]+n));const y=window.scrollY;render();window.scrollTo(0,y);return}
   if(a==='qReview'){if(!ui.q.ans.every(v=>v!=null))return;ui.q.step='confirm';render();window.scrollTo(0,0);return}
@@ -2301,6 +2315,137 @@ document.addEventListener('click',ev=>{
   if(a==='friendBack'){ui.friend=null;render();window.scrollTo(0,0);return}
 });
 
+
+/* ================= Modo professor =================
+   O professor monta um plano no próprio app e envia por link (coachPlans/<id>). O aluno aceita: o plano entra
+   nos planos dele e ele libera pro professor ler o perfil e os dias de treino (users/<aluno>/meta/coach).
+   Fotos e notificações do aluno continuam privadas. */
+const CO={students:[],unsub:null,cache:{},updates:[]};
+function coachProfileBlock(){
+  const mine=(S.plans||[]).filter(p=>p.coachPlan);
+  return `<button class="card switch" data-act="coachMode"><span class="sl"><b>Sou personal trainer</b><span>${S.coach?'Envie planos pros alunos na aba Plano e acompanhe tudo em Amigos › Alunos.':'Monte treinos pros seus alunos e acompanhe a frequência e as cargas deles.'}</span></span><i class="sw ${S.coach?'on':''}"></i></button>
+  ${mine.length?`<section class="card" style="display:flex;flex-direction:column;gap:10px;padding:16px"><b>Seu professor</b>${[...new Set(mine.map(p=>p.coachPlan.coach))].map(c=>{const p=mine.find(x=>x.coachPlan.coach===c);return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span class="muted" style="font-size:.85rem">${esc(p.coachPlan.coachName||'Professor')} vê sua frequência, cargas e treinos. Não vê suas fotos.</span><button class="link danger" data-act="coachRevoke" data-c="${c}">Remover acesso</button></div>`}).join('')}</section>`:''}`;
+}
+async function sendPlanToStudent(pid){
+  const p=S.plans.find(x=>x.id===pid);if(!p||!fb.uid)return;
+  const ws=planWorkouts(pid).map(w=>({id:w.id,t:w.t,items:w.items.map(it=>({...it}))}));
+  if(!ws.length){toast('Esse plano ainda não tem treinos');return}
+  const exIds=[...new Set(ws.flatMap(w=>w.items.map(it=>it.ex)))];
+  const exercises=exIds.map(id=>exById(id)).filter(Boolean).map(e=>({id:e.id,name:e.name,group:e.group,kind:kindOf(e)}));
+  const ref=p.shareId?fb.fs.collection('coachPlans').doc(p.shareId):fb.fs.collection('coachPlans').doc();
+  const v=(p.shareV||0)+1;
+  try{await ref.set({coach:fb.uid,coachName:displayName()||'Professor',coachPhoto:ui.photo||'',name:p.name,workouts:ws,schedule:{...planSched(pid)},exercises,v,updatedAt:Date.now()})}
+  catch(e){toast('Não deu pra enviar. Confira se as regras novas do Firebase foram publicadas.');return}
+  p.shareId=ref.id;p.shareV=v;persistProfile();render();
+  const url=location.origin+location.pathname+'?treino='+ref.id;
+  const text=v>1?`Atualizei seu treino "${p.name}" no KOVA. Abra o app pra receber a versão nova.`:`Montei seu treino "${p.name}" no KOVA. Abra o link, entre com sua conta Google e aceite: ${url}`;
+  try{if(navigator.share){await navigator.share({text});return}}catch(e){if(e&&e.name==='AbortError')return}
+  try{await navigator.clipboard.writeText(text);toast(v>1?'Treino atualizado! Seu aluno recebe ao abrir o app.':'Link copiado! Mande pro seu aluno.')}catch(e){toast(url)}
+}
+async function maybePlanInvite(){
+  const id=ui.pendingPlan;if(!id||!fb.uid||!S.quiz||S.onb===false||sheetRoot.innerHTML)return;
+  let snap;try{snap=await fb.fs.collection('coachPlans').doc(id).get()}catch(e){ui.pendingPlan=null;toast('Não consegui abrir esse treino.');return}
+  if(!snap.exists){ui.pendingPlan=null;toast('Esse link de treino não existe mais.');return}
+  const d=snap.data();
+  if(d.coach===fb.uid){ui.pendingPlan=null;toast('Esse é um treino que você mesmo enviou.');return}
+  const dd=Object.values(d.schedule||{}).filter(Boolean).length;
+  CO.invite={id,...d};
+  openSheet(`<div class="sheethead"><div><div class="eyebrow">Treino do seu professor</div><h2>${esc(d.name)}</h2></div>${closeBtn()}</div>
+    <p class="note2"><b>${esc(d.coachName||'Seu professor')}</b> montou ${d.workouts.length} ${d.workouts.length===1?'treino':'treinos'} pra você, ${dd} ${dd===1?'dia':'dias'} por semana.</p>
+    <div class="list">${d.workouts.map(w=>`<div class="row"><div class="main"><div class="name">${esc(w.t)}</div><div class="sub num">${w.items.length} exercícios</div></div></div>`).join('')}</div>
+    <p class="hint" style="margin:0">Ao aceitar, ${esc((d.coachName||'seu professor').split(' ')[0])} passa a ver sua frequência, suas cargas e seus treinos pra acompanhar sua evolução. Suas fotos continuam só suas. Dá pra remover o acesso no Perfil.</p>
+    <button class="primary" data-act="coachAccept" data-use="1">Aceitar e usar agora</button>
+    <button class="ghost" data-act="coachAccept">Aceitar e usar depois</button>`);
+  ui.pendingPlan=null;
+}
+function importCoachExercises(list){
+  const map={};
+  for(const x of list||[]){let e=exById(x.id)||S.exercises.find(y=>norm(y.name)===norm(x.name));if(!e){e={id:x.id,name:x.name,group:x.group,kind:x.kind};S.exercises.push(e)}map[x.id]=e.id}
+  return map;
+}
+async function acceptCoachPlan(use){
+  const d=CO.invite;if(!d)return closeSheet();
+  const map=importCoachExercises(d.exercises);
+  const ws=d.workouts.map(w=>({...w,items:w.items.map(it=>({...it,ex:map[it.ex]||it.ex}))}));
+  const pid=addPlan(d.name,ws,d.schedule||{},[]);const p=S.plans.find(x=>x.id===pid);p.coachPlan={id:d.id,coach:d.coach,coachName:d.coachName||'',v:d.v||1};
+  persistProfile();
+  try{
+    const FV=firebase.firestore.FieldValue;
+    await fb.fs.collection('users').doc(fb.uid).collection('meta').doc('coach').set({coaches:FV.arrayUnion(d.coach)},{merge:true});
+    await fb.fs.collection('coaches').doc(d.coach).collection('students').doc(fb.uid).set({name:displayName()||'Aluno',photo:avatarSrc()||'',plan:d.name,since:Date.now()},{merge:true});
+  }catch(e){toast('Plano salvo, mas não deu pra liberar o acesso do professor agora.')}
+  CO.invite=null;closeSheet();
+  if(use)usePlan(pid);else{ui.tab='plano';ui.planOpen=pid;render()}
+  toast(`Treino de ${(d.coachName||'seu professor').split(' ')[0]} recebido!`);
+}
+async function checkCoachUpdates(){
+  if(!fb.uid)return;CO.updates=[];
+  for(const p of S.plans||[]){if(!p.coachPlan)continue;
+    try{const s=await fb.fs.collection('coachPlans').doc(p.coachPlan.id).get();if(s.exists&&(s.data().v||1)>(p.coachPlan.v||1))CO.updates.push({pid:p.id,data:{id:s.id,...s.data()}})}catch(e){}
+  }
+  if(CO.updates.length&&ui.tab==='treino'&&!sheetRoot.innerHTML)render();
+}
+function coachUpdateCard(){
+  const u=CO.updates&&CO.updates[0];if(!u)return '';const p=S.plans.find(x=>x.id===u.pid);if(!p)return '';
+  return `<section class="card warn"><div class="wt"><b>Treino atualizado</b><span class="xpchip">Professor</span></div>
+    <span class="muted" style="font-size:.84rem">${esc((u.data.coachName||'Seu professor').split(' ')[0])} atualizou o plano ${esc(p.name)}. Seu histórico e suas cargas continuam salvos.</span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="sm solid" data-act="coachUpdate">Atualizar treino</button></div></section>`;
+}
+function applyCoachUpdate(){
+  const u=CO.updates.shift();if(!u)return;const p=S.plans.find(x=>x.id===u.pid);if(!p)return render();
+  const d=u.data,map=importCoachExercises(d.exercises),isAct=p.id===S.activePlan;
+  if(isAct)freezePast();
+  for(const w of planWorkouts(p.id))w.p='_arch';
+  const idmap={};
+  for(const w of d.workouts){const id=newId();idmap[w.id]=id;S.workouts.push({id,t:w.t,p:p.id,items:w.items.map(it=>({...it,ex:map[it.ex]||it.ex}))})}
+  const sc={};for(const k in d.schedule||{})sc[k]=d.schedule[k]?idmap[d.schedule[k]]||null:null;
+  if(isAct)S.schedule={'0':null,'1':null,'2':null,'3':null,'4':null,'5':null,'6':null,...sc};else p.schedule=sc;
+  p.coachPlan.v=d.v||1;p.name=d.name||p.name;
+  persistProfile();scheduleMeta();render();toast('Treino atualizado!');
+}
+async function revokeCoach(c){
+  try{const FV=firebase.firestore.FieldValue;await fb.fs.collection('users').doc(fb.uid).collection('meta').doc('coach').set({coaches:FV.arrayRemove(c)},{merge:true});await fb.fs.collection('coaches').doc(c).collection('students').doc(fb.uid).delete()}catch(e){}
+  for(const p of S.plans)if(p.coachPlan&&p.coachPlan.coach===c)delete p.coachPlan;
+  persistProfile();render();toast('Acesso do professor removido');
+}
+function subStudents(){
+  if(CO.unsub||!fb.uid)return;
+  CO.unsub=fb.fs.collection('coaches').doc(fb.uid).collection('students').onSnapshot(q=>{CO.students=q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.name||'').localeCompare(b.name||''));if(ui.tab==='amigos'&&!sheetRoot.innerHTML)render()},()=>{});
+}
+function viewStudents(){
+  if(!CO.students.length)return `<div class="empty">Você ainda não tem alunos. Monte um plano na aba Plano, abra o plano e toque em <b>Enviar pra aluno</b>. Quando o aluno aceitar o link, ele aparece aqui.</div>`;
+  return `<div class="list">${CO.students.map(st=>{const c=CO.cache[st.id];const last=c&&c.lastDay;return `<button class="row" data-act="studentOpen" data-id="${st.id}">${avHtml(st.photo,st.name,'av2')}<div class="main"><div class="name">${esc(st.name||'Aluno')}</div><div class="sub">${esc(st.plan||'')}${last?` · último treino ${whenTxt(last)}`:''}</div></div><span class="chev">›</span></button>`}).join('')}</div>
+  <p class="hint" style="margin:0">Toque num aluno pra ver frequência, cargas e treinos.</p>`;
+}
+async function loadStudent(sid){
+  const col=fb.fs.collection('users').doc(sid).collection('data');
+  const [prof,q]=await Promise.all([col.doc('profile').get(),col.where('kind','==','day').get()]);
+  const pd=prof.exists?prof.data():{},days={};
+  for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:d.logs||[]};for(const f of ['w','done','start','end','dur','acts','cali'])if(d[f]!=null)days[d.date][f]=d[f]}
+  const st={v:pd.v||8,goal:pd.goal||4,days,exercises:pd.exercises||[],workouts:pd.workouts||[],schedule:pd.schedule||{},quiz:pd.quiz||null,pause:pd.pause||null,pauses:pd.pauses||[],plans:pd.plans||[],activePlan:pd.activePlan||null,groups:[],bio:pd.bio||null};
+  const keys=Object.keys(days).filter(k=>days[k].checked||(days[k].logs||[]).length||(days[k].acts||[]).length).sort();
+  CO.cache[sid]={st,lastDay:keys[keys.length-1]||null,at:Date.now()};
+  return CO.cache[sid];
+}
+function withState(st,fn){const save=S;S=st;_xp=null;try{return fn()}finally{S=save;_xp=null}}
+function viewStudent(){
+  const sid=ui.student,info=CO.students.find(x=>x.id===sid)||{},c=CO.cache[sid];
+  const X0=c&&c.st?withState(c.st,()=>XP()):null,lv=X0?X0.level:1;
+  const head=`<div class="khead"><button class="round" data-act="studentBack" aria-label="Voltar">${I_BACK}</button><span class="muted" style="flex:1;text-align:center;font-weight:600">Aluno</span><span style="width:44px"></span></div>
+    <div class="prof">${frameAv(lv,info.photo,info.name,'big')}<h1>${esc(info.name||'Aluno')}</h1><span class="muted">${X0?`Nível ${X0.level} · ${X0.tier} · `:''}${esc(info.plan||'')}</span>${c&&c.lastDay?`<span class="muted" style="font-size:.84rem">Último treino ${whenTxt(c.lastDay)}</span>`:''}</div>`;
+  if(!c){loadStudent(sid).then(()=>{if(ui.student===sid)render()}).catch(()=>{if(ui.student===sid){CO.cache[sid]={err:true};render()}});return head+`<div class="empty">Carregando os treinos…</div>`}
+  if(c.err)return head+`<div class="empty">Não consegui abrir os dados desse aluno. Peça pra ele abrir o link do treino de novo, ou confira se as regras novas do Firebase foram publicadas.</div>`;
+  const first=(info.name||'Aluno').split(' ')[0];
+  const body=withState(c.st,()=>{
+    const recent=Object.keys(S.days).filter(k=>(S.days[k].logs||[]).length||(S.days[k].acts||[]).length).sort().reverse().slice(0,6);
+    const rows=recent.map(k=>{const d=S.days[k],w=workoutFor(k),tops=(d.logs||[]).filter(l=>l.w!=null).slice(0,3).map(l=>`${esc((exById(l.ex)||{name:'?'}).name)} ${fmt(l.w)} kg × ${l.r}`).join(' · ');
+      return `<div class="item"><div class="main"><div class="name">${w?esc(w.t):(d.acts&&d.acts.length?esc(actName(d.acts[0])):'Treino')}</div><div class="sub num">${ddmm(k)}${tops?` · ${tops}`:''}</div></div></div>`}).join('');
+    return `${recent.length?`<div class="section"><h3>Últimos treinos</h3><div class="list">${rows}</div></div>`:`<div class="empty">${esc(first)} ainda não registrou treinos.</div>`}
+      <div class="ro">${viewFreq().replace(/Seus dias de treino/g,'Dias de treino')}</div>
+      <div class="ro">${viewProg().replace(/Sua evolução/g,'Evolução das cargas').replace(acct(),'')}</div>`;
+  });
+  return head+body;
+}
 
 /* ================= Vários planos ================= */
 const I_CARET='<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
@@ -2433,6 +2578,7 @@ function endSwipe(e){
   if(s.dx<-48){s.el.classList.add('open');s.row.style.transform='translateX(-96px)'}
   else{s.el.classList.remove('open');s.row.style.transform=''}
 }
+document.addEventListener('click',e=>{const b=e.target.closest('.ro [data-act]');if(b&&!['month'].includes(b.dataset.act)){e.stopPropagation();e.preventDefault()}},true);
 document.addEventListener('pointerup',endSwipe);document.addEventListener('pointercancel',endSwipe);
 document.addEventListener('click',e=>{if(noClick){e.stopPropagation();e.preventDefault();return}
   const b=e.target.closest('[data-act="swDel"],[data-act="undo"]');if(!b)return;
@@ -2568,6 +2714,7 @@ function viewHoje(){
   <div class="hello">${frameAv(X.level,avatarSrc(),displayName(),'')}<div class="hi"><small>${greet()}${firstName()?',':''}</small><b>${esc(firstName())||'Bora treinar?'}</b></div></div>
   ${levelCard()}
   ${warnCard()}
+  ${coachUpdateCard()}
   ${renewCard()}
   ${fb.ready&&ui.sync==='local'?`<div class="banner"><p><b>Entre com Google</b> para guardar seus treinos na nuvem. Assim nada se perde se você trocar de celular ou limpar o navegador.</p><button class="gbtn" data-act="signin">${GICON}Entrar com Google</button></div>`:''}
   <div class="datebar">
@@ -2614,7 +2761,7 @@ function viewPlano(){
     <button class="plh" data-act="planToggle" data-id="${p.id}" aria-expanded="${open}"><span class="m"><span class="t"><b>${esc(p.name)}</b>${isAct?'<span class="ptag">Em uso</span>':''}</span><span class="sub num">${planMeta(p)}</span></span><span class="car">${I_CARET}</span></button>
     ${open?`<div class="plb"><div class="list">${weekRows(p)}</div>
       ${isAct?`<p class="hint" style="margin:0">Toque num dia pra ver ou mudar o treino. Arraste pelos pontinhos pra trocar o treino de dia.</p>`:`<button class="primary" data-act="planUse" data-id="${p.id}">Usar este plano</button>`}
-      <div class="plact">${isAct?'<button class="link" data-act="renewOpen">Variar exercícios</button>':''}<button class="link" data-act="planRename" data-id="${p.id}">Renomear</button>${isAct?'':`<button class="link danger" data-act="planDel" data-id="${p.id}">Excluir plano</button>`}</div></div>`:''}
+      <div class="plact">${isAct?'<button class="link" data-act="renewOpen">Variar exercícios</button>':''}${S.coach&&ui.sync==='google'?`<button class="link" data-act="planSend" data-id="${p.id}">${p.shareId?'Atualizar pro aluno':'Enviar pra aluno'}</button>`:''}<button class="link" data-act="planRename" data-id="${p.id}">Renomear</button>${isAct?'':`<button class="link danger" data-act="planDel" data-id="${p.id}">Excluir plano</button>`}</div></div>`:''}
   </section>`}).join('');
   const wl=planWorkouts(act.id).map(w=>{const ds=WEEK.filter(d=>S.schedule[String(d)]===w.id);return `<button class="row" data-act="openW" data-id="${w.id}"><div class="main" style="display:flex;flex-direction:column;gap:5px"><div class="name">${esc(w.t)}</div>${pills(wGroups(w))}<div class="sub num">${w.items.length} ${w.items.length===1?'exercício':'exercícios'}${w.items.length?` · cerca de ${planMinutes(w)} min`:''}${ds.length?` · ${ds.map(d=>WDS[d]).join(', ')}`:' · sem dia na semana'}</div></div><span class="chev">›</span></button>`}).join('');
   return `
@@ -3017,6 +3164,14 @@ document.addEventListener('click',ev=>{
   if(a==='openW')return sheetWorkout(b.dataset.id,null);
   if(a==='dayOpen'){const d=+b.dataset.d,wid=S.schedule[String(d)];if(wid&&wById(wid))return sheetWorkout(wid,d);ui.swap={k:null,d,weekOnly:true,scope:'semana'};return sheetSwap()}
   if(a==='planTab'){ui.planTab=b.dataset.v;render();return}
+  if(a==='planSend'){sendPlanToStudent(b.dataset.id);return}
+  if(a==='coachMode'){S.coach=!S.coach;persistProfile();if(S.coach&&fb.uid)subStudents();render();toast(S.coach?'Modo professor ligado':'Modo professor desligado');return}
+  if(a==='coachAccept'){acceptCoachPlan(!!b.dataset.use);return}
+  if(a==='coachUpdate'){applyCoachUpdate();return}
+  if(a==='coachRevoke'){if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Toque de novo pra remover';return}revokeCoach(b.dataset.c);return}
+  if(a==='amTab'){ui.amTab=b.dataset.v;ui.student=null;render();window.scrollTo(0,0);return}
+  if(a==='studentOpen'){ui.student=b.dataset.id;delete CO.cache[b.dataset.id];render();window.scrollTo(0,0);return}
+  if(a==='studentBack'){ui.student=null;render();window.scrollTo(0,0);return}
   if(a==='renewOpen')return sheetRenew();
   if(a==='renewApply')return applyRenew();
   if(a==='renewLater'){const pl=curPlan();pl.snooze=addDays(today(),14);persistProfile();closeSheet();render();toast('Combinado, lembro daqui 2 semanas');return}
