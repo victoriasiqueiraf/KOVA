@@ -615,6 +615,8 @@ body.dragging .wkline:has(.main.holder) .wkrow{background:var(--accent-soft);bor
 .prios button.on{background:var(--accent);color:var(--accent-ink)}
 .row.renew .main{gap:2px}
 .row.renew .sub{text-decoration:line-through;color:var(--muted)}
+.actxp{background:var(--accent-soft);border-radius:16px;padding:12px 16px;font-size:.95rem}
+.actxp b{color:var(--accent);font-size:1.1rem}
 </style>
 
 <main id="app"></main>
@@ -1286,7 +1288,8 @@ async function shareShare(){
 const GOALS={
   emagrecer:{n:'Emagrecer',d:'Perder gordura mantendo os músculos',prot:[1.8,2.2]},
   hipertrofia:{n:'Hipertrofia',d:'Ganhar massa muscular',prot:[1.6,2.2]},
-  forca:{n:'Força',d:'Ficar mais forte nos exercícios principais',prot:[1.6,2.0]}
+  forca:{n:'Força',d:'Ficar mais forte nos exercícios principais',prot:[1.6,2.0]},
+  performance:{n:'Performance',d:'Mais potência, agilidade e fôlego pro dia a dia e pro esporte',prot:[1.4,2.0]}
 };
 // Blocos de treino. m = exercício principal, a = acessório, i = isométrico (segundos)
 const TEMPL={
@@ -1299,15 +1302,22 @@ const TEMPL={
   infB:{t:'Inferior B',slots:[['leg-press','m'],['elevacao-pelvica','m'],['bulgaro','a'],['extensora','a'],['cadeira-flexora','a'],['abdominal-infra','a']]},
   push:{t:'Peito + Ombros + Tríceps',slots:[['supino-reto','m'],['desenvolvimento','m'],['supino-inclinado','a'],['elevacao-lateral','a'],['peck-deck','a'],['triceps-corda','a']]},
   pull:{t:'Costas + Bíceps',slots:[['puxada-frontal','m'],['remada-baixa','m'],['remada-unilateral','a'],['crucifixo-inverso','a'],['rosca-direta','a'],['rosca-martelo','a']]},
+  // Performance: potência (p), força (m), acessórios (a), condicionamento (c) e cardio intervalado (t)
+  perfA:{t:'Potência + inferiores',slots:[['box-jump','p'],['agachamento-livre','m'],['stiff','m'],['bulgaro','a'],['panturrilha-pe','a'],['prancha','i']]},
+  perfB:{t:'Potência + superiores',slots:[['wall-ball','p'],['barra-fixa','m'],['supino-reto','m'],['remada-curvada','a'],['desenvolvimento-halteres','a'],['prancha-lateral','i']]},
+  perfC:{t:'Corpo todo atlético',slots:[['kb-swing','p'],['thruster','m'],['afundo','a'],['remada-unilateral','a'],['elevacao-pelvica','a'],['russian-twist','a']]},
+  perfD:{t:'Condicionamento',slots:[['bike','t'],['burpee','c'],['agachamento-salto','c'],['mountain-climber','c'],['corda-naval','c'],['pular-corda','c']]},
   legs:{t:'Pernas + Glúteos',slots:[['agachamento','m'],['stiff','m'],['leg-press','a'],['elevacao-pelvica','a'],['mesa-flexora','a'],['panturrilha-pe','a']]}
 };
 const SPLITS={2:['fullA','fullB'],3:{ini:['fullA','fullB','fullC'],exp:['supA','infA','fullC']},4:['supA','infA','supB','infB'],5:['supA','infA','push','pull','legs'],6:['push','pull','legs','push','pull','legs']};
+const PERF_SPLITS={2:['perfA','perfB'],3:['perfA','perfB','perfD'],4:['perfA','perfB','perfD','perfC'],5:['perfA','perfB','perfD','perfC','perfD'],6:['perfA','perfB','perfD','perfA','perfB','perfC']};
 const DAYMAP={2:[1,4],3:[1,3,5],4:[1,2,4,5],5:[1,2,3,5,6],6:[1,2,3,4,5,6]};
 // [séries, reps mín, reps máx, descanso em min]
 const PARAMS={
   hipertrofia:{m:[3,8,12,2],a:[3,10,15,1.5]},
   forca:{m:[4,4,6,3],a:[3,6,10,2]},
-  emagrecer:{m:[3,10,12,1.5],a:[3,12,15,1]}
+  emagrecer:{m:[3,10,12,1.5],a:[3,12,15,1]},
+  performance:{m:[4,5,8,2.5],a:[3,8,12,1.5],p:[4,3,5,2],c:[3,30,40,0.5]}
 };
 const bmiOf=(w,h)=>w/((h/100)**2);
 const bmiClass=b=>b<18.5?'abaixo do peso':b<25?'faixa saudável':b<30?'sobrepeso':'obesidade';
@@ -1316,9 +1326,13 @@ function genPlan(o){
   if(age<18&&o.goal==='forca')P.m=[3,6,10,2.5];
   if(age>=40&&age<60){P.m[3]+=0.5;P.a[3]+=0.5}
   if(age>=60){P.m=[P.m[0],10,15,2];P.a=[P.a[0],10,15,1.5]}
-  let keys=SPLITS[o.days];if(!Array.isArray(keys))keys=keys[o.level];
+  let keys=o.goal==='performance'?PERF_SPLITS[o.days]:SPLITS[o.days];if(!Array.isArray(keys))keys=keys[o.level];
   // IMC alto: troca exercícios de mais impacto por versões com apoio
-  const swap=heavy?{'agachamento':'leg-press','bulgaro':'abdutora',...(age>=60?{'stiff':'mesa-flexora'}:{})}:{};
+  const swap=heavy?{'agachamento':'leg-press','bulgaro':'abdutora',...(age>=60?{'stiff':'mesa-flexora'}:{}),
+    // performance com IMC alto ou 60+: sem saltos, com versões de baixo impacto
+    'box-jump':'goblet','agachamento-salto':'goblet','burpee':'kb-swing','pular-corda':'remada-baixa','agachamento-livre':'leg-press','thruster':'desenvolvimento-halteres','wall-ball':'desenvolvimento','barra-fixa':'puxada-frontal'}:{};
+  if(heavy&&P.p)P.p=P.a.slice(); // sem explosão: movimentos controlados
+  if(o.level==='ini')Object.assign(swap,{'barra-fixa':'puxada-frontal','box-jump':swap['box-jump']||'agachamento-salto','thruster':swap['thruster']||'goblet'});
   const ensure=id=>{let e=resolveEx(id);if(!e){e={...CAT[id]};S.exercises.push(e)}return e.id};
   const made={},workouts=[];
   for(const key of keys){
@@ -1332,7 +1346,9 @@ function genPlan(o){
       if(used.has(id))continue;
       used.add(id);
       if(t==='i'){items.push({ex:ensure(id),sets:3,rmin:30,rmax:45,rest:1});continue}
+      if(t==='t'){items.push({ex:ensure(id),mins:12});continue}
       let [sets,rmin,rmax,rest]=P[t];
+      if(t==='c'&&kindOf(CAT[id])!=='iso'){rmin=10;rmax=15}
       if(o.level==='ini')sets=Math.max(2,sets-(t==='a'||o.goal==='forca'?1:0));
       items.push({ex:ensure(id),sets,rmin,rmax,rest});
     }
@@ -1353,7 +1369,7 @@ const PRIO_GROUPS=['Glúteos','Quadríceps','Posterior','Costas','Peito','Ombros
 const PRIO_POOL={'Glúteos':['elevacao-pelvica','abdutora','gluteo-cabo','bulgaro'],'Quadríceps':['extensora','leg-press','hack'],'Posterior':['mesa-flexora','cadeira-flexora','stiff'],
   'Costas':['puxada-frontal','remada-baixa','remada-unilateral'],'Peito':['supino-inclinado','peck-deck','supino-maquina'],'Ombros':['elevacao-lateral','desenvolvimento','crucifixo-inverso'],
   'Bíceps':['rosca-direta','rosca-martelo','rosca-scott'],'Tríceps':['triceps-corda','triceps-pulley','triceps-frances'],'Abdômen':['abdominal-maquina','abdominal-infra','abdominal-polia'],'Panturrilha':['panturrilha-pe','panturrilha-sentado']};
-const allowsGroup=(key,g)=>g==='Abdômen'||(key.startsWith('full')?true:key.startsWith('sup')?UPPER.includes(g):key.startsWith('inf')||key==='legs'?LOWER.includes(g):key==='push'?['Peito','Ombros','Tríceps'].includes(g):key==='pull'?['Costas','Bíceps'].includes(g):false);
+const allowsGroup=(key,g)=>g==='Abdômen'||(key==='perfA'?LOWER.includes(g):key==='perfB'?UPPER.includes(g):key.startsWith('full')||key.startsWith('perf')?true:key.startsWith('sup')?UPPER.includes(g):key.startsWith('inf')||key==='legs'?LOWER.includes(g):key==='push'?['Peito','Ombros','Tríceps'].includes(g):key==='pull'?['Costas','Bíceps'].includes(g):false);
 function addPriority(workouts,keys,o,P,ensure){
   const prio=(o.prio||[]).slice(0,3);if(!prio.length)return;
   const times={};for(const k of keys)times[k]=(times[k]||0)+1; // quantas vezes cada treino aparece na semana
@@ -1752,13 +1768,32 @@ const ACTS=[['bike','Bike','Cardio',1],['corrida','Corrida','Cardio',1],['caminh
   ['escalada','Escalada','Cardio',0],['yoga','Yoga','Alongamento',0],['pilates','Pilates','Alongamento',0],['danca','Dança','Alongamento',0],['futebol','Futebol','Cardio',0],
   ['beach','Beach tennis','Cardio',0],['luta','Luta','Cardio',0],['funcional','Funcional','Cardio',0],['outro','Outra','Cardio',0]];
 const actInfo=t=>{const a=ACTS.find(x=>x[0]===t)||ACTS[ACTS.length-1];return {id:a[0],n:a[1],g:a[2],dist:!!a[3]}};
+/* XP das atividades fora da academia: minutos × intensidade (MET, do Compendium of Physical Activities).
+   Corrida, bike, caminhada e natação: a intensidade sai do ritmo (distância ÷ tempo).
+   As outras: "Como foi?" leve/moderado/puxado ajusta 15%. Teto de 300 XP por atividade. */
+const ACT_MET={bike:8,corrida:9.8,caminhada:3.8,trilha:6,natacao:8,escalada:8,yoga:2.8,pilates:3,danca:5.5,futebol:8,beach:6,luta:10,funcional:9,outro:5};
+const SPEED_MET={corrida:[[6.4,6],[8,8.3],[9.7,9.8],[11.3,11],[12.9,11.8],[14.5,12.8],[16,14.5]],
+  bike:[[12,4],[17.5,6.8],[20.5,8],[23.5,10],[27,12],[32,15.8]],
+  caminhada:[[3,2.8],[4.8,3.5],[5.6,4.3],[6.4,5]],natacao:[[1.5,6],[2,8.3],[2.5,9.8],[3,10]]};
+const SPEED_MAX={corrida:25,bike:60,caminhada:9,natacao:6};
+const EFFORT={leve:0.85,moderado:1,puxado:1.15};
+const ACT_XP_K=0.33,ACT_XP_CAP=300;
+function interp(pts,x){if(x<=pts[0][0])return pts[0][1];for(let i=1;i<pts.length;i++)if(x<=pts[i][0]){const [x0,y0]=pts[i-1],[x1,y1]=pts[i];return y0+(y1-y0)*(x-x0)/(x1-x0)}return pts[pts.length-1][1]}
+function actPace(a){const sp=a.km&&a.min?a.km/(a.min/60):0;return SPEED_MET[a.type]&&sp>0&&sp<=SPEED_MAX[a.type]?sp:0}
+function actXP(a){
+  const min=Math.max(0,a.min||0);if(!min)return 0;
+  const sp=actPace(a);
+  const met=sp?interp(SPEED_MET[a.type],sp):(ACT_MET[a.type]||5)*(EFFORT[a.ef]||1);
+  return Math.min(ACT_XP_CAP,Math.round(min*met*ACT_XP_K));
+}
 const actPic=(t,cls)=>`<span class="pic ${cls||''}" style="${gc(actInfo(t).g)}">${picSvg('act-'+actInfo(t).id)}</span>`;
 const actName=a=>a.type==='outro'&&a.note?a.note:actInfo(a.type).n;
-function actTxt(a){return [a.min?`${a.min} min`:'',a.km?`${fmt(a.km)} km`:''].filter(Boolean).join(' · ')}
+const durTxt=m=>{const t=Math.round(m*60),mm=Math.floor(t/60),ss=t%60;return ss?`${mm}:${String(ss).padStart(2,'0')}`:`${mm} min`};
+function actTxt(a){return [a.min?durTxt(a.min):'',a.km?`${fmt(a.km)} km`:''].filter(Boolean).join(' · ')}
 function actsBlock(k){
   const list=(S.days[k]?.acts)||[];
   return `<div class="section"><h3>Outras atividades</h3>
-    ${list.length?`<div class="list">${list.map(a=>`<button class="row actrow" style="${gc(actInfo(a.type).g)}" data-act="actEdit" data-id="${a.id}">${actPic(a.type)}<div class="main"><div class="name">${esc(actName(a))}</div><div class="sub num">${esc(actTxt(a))}${a.type!=='outro'&&a.note?` · ${esc(a.note)}`:''}</div></div><span class="chev">›</span></button>`).join('')}</div>`:''}
+    ${list.length?`<div class="list">${list.map(a=>`<button class="row actrow" style="${gc(actInfo(a.type).g)}" data-act="actEdit" data-id="${a.id}">${actPic(a.type)}<div class="main"><div class="name">${esc(actName(a))}</div><div class="sub num">${esc(actTxt(a))}${a.type!=='outro'&&a.note?` · ${esc(a.note)}`:''}</div><div><span class="xpchip num">+${actXP(a)} XP</span></div></div><span class="chev">›</span></button>`).join('')}</div>`:''}
     <button class="addphoto" data-act="actNew" style="min-height:52px">+ Registrar bike, escalada, corrida…</button>
     ${list.length?'':'<p class="hint" style="margin:0">Pra quando você se mexeu fora da academia.</p>'}</div>`;
 }
@@ -1769,16 +1804,26 @@ function sheetAct(){
     <div class="actgrid">${ACTS.map(([id,n])=>`<button class="${a.type===id?'on':''}" data-act="actType" data-t="${id}">${actPic(id,'sm')}${n}</button>`).join('')}</div>
     ${a.type==='outro'?`<div class="field"><label for="actName">Qual atividade?</label><input type="text" id="actName" value="${esc(a.note||'')}" placeholder="Ex.: Surf" maxlength="30" autocomplete="off"></div>`:''}
     <div class="steppers">
-      ${stepper('actMin','Duração','em minutos',a.min||30,5)}
-      ${info.dist?stepper('actKm','Distância','em km (opcional)',fmt(a.km||0),0.5):''}
+      ${stepper('actMin','Duração','minutos',Math.floor(a.min||30),5)}
+      ${SPEED_MET[a.type]?stepper('actSec','Segundos','pra quem cronometrou',Math.round(((a.min||0)%1)*60),5):''}
+      ${info.dist?stepper('actKm','Distância',SPEED_MET[a.type]?'em km · define o ritmo':'em km (opcional)',fmt(a.km||0),a.type==='bike'||a.type==='trilha'?0.5:0.1):''}
     </div>
+    ${!SPEED_MET[a.type]?`<div class="field"><label>Como foi?</label><div class="seg">${['leve','moderado','puxado'].map(e=>`<button class="${(a.ef||'moderado')===e?'on':''}" data-act="actEf" data-e="${e}">${e[0].toUpperCase()+e.slice(1)}</button>`).join('')}</div></div>`:''}
+    <div class="actxp"><span id="actXP" class="num">${actPreview(a)}</span></div>
     ${a.type!=='outro'?`<div class="field"><label for="actNote">Observação (opcional)</label><input type="text" id="actNote" value="${esc(a.note||'')}" placeholder="Ex.: Parque do Ibirapuera, via 5+" maxlength="60" autocomplete="off"></div>`:''}
     <button class="primary" data-act="actSave">${isNew?'Salvar atividade':'Salvar alterações'}</button>
     ${isNew?'':`<button class="ghost" data-act="actShare" data-id="${a.id}">Compartilhar no Stories</button><button class="ghost danger" data-act="actDel" data-id="${a.id}">Apagar atividade</button>`}`);
 }
+function actPreview(a){const x=actXP(a),sp=actPace(a);
+  if(sp&&a.type==='corrida'){const p=60/sp,mm=Math.floor(p),ss=Math.round((p-mm)*60);return `Vale <b>+${x} XP</b> · ritmo ${mm}:${String(ss===60?59:ss).padStart(2,'0')} min/km`}
+  if(sp)return `Vale <b>+${x} XP</b> · ${fmt(Math.round(sp*10)/10)} km/h`;
+  return `Vale <b>+${x} XP</b>${x>=ACT_XP_CAP?' (máximo por atividade)':''}`}
+function updActXP(){const el=document.getElementById('actXP');if(!el||!ui.act)return;readAct();el.innerHTML=actPreview(ui.act)}
+document.addEventListener('input',e=>{if(e.target.closest('.sheet'))setTimeout(updActXP,0)});
+document.addEventListener('click',e=>{if(e.target.closest('.sheet [data-act="step"]'))setTimeout(updActXP,0)});
 function readAct(){
   const a=ui.act,v=id=>document.getElementById(id);
-  if(v('actMin'))a.min=Math.max(1,Math.round(readNum('actMin')));
+  if(v('actMin'))a.min=Math.max(1,Math.round(readNum('actMin')))+(v('actSec')?Math.min(59,Math.round(readNum('actSec')))/60:0);
   if(v('actKm'))a.km=Math.round(readNum('actKm')*10)/10;
   if(v('actNote'))a.note=v('actNote').value.trim();
   if(v('actName'))a.note=v('actName').value.trim();
@@ -1795,14 +1840,15 @@ document.addEventListener('click',ev=>{
   const a=b.dataset.act,k=ui.date;
   if(a==='actNew'){ui.act={type:'bike',min:30,km:0,note:''};return sheetAct()}
   if(a==='actEdit'){const x=(S.days[k]?.acts||[]).find(y=>y.id===b.dataset.id);if(!x)return;ui.act={...x};return sheetAct()}
+  if(a==='actEf'){readAct();ui.act.ef=b.dataset.e;return sheetAct()}
   if(a==='actType'){readAct();if(ui.act.type==='outro'||b.dataset.t==='outro')ui.act.note='';ui.act.type=b.dataset.t;if(!actInfo(ui.act.type).dist)ui.act.km=0;return sheetAct()}
   if(a==='actSave'){
     readAct();const x=ui.act;
     if(x.type==='outro'&&!x.note){toast('Escreva qual foi a atividade');return}
     const d=dayOf(k);if(!d.acts)d.acts=[];
-    const item={id:x.id||newId(),type:x.type,min:x.min||0,t:x.t||Date.now()};if(x.km)item.km=x.km;if(x.note)item.note=x.note;
+    const item={id:x.id||newId(),type:x.type,min:x.min||0,t:x.t||Date.now()};if(x.km)item.km=x.km;if(x.note)item.note=x.note;if(x.ef&&x.ef!=='moderado')item.ef=x.ef;
     const i=d.acts.findIndex(y=>y.id===item.id);if(i>=0)d.acts[i]=item;else d.acts.push(item);
-    persistDay(k);closeSheet();ui.act=null;render();toast(`${actName(item)} registrada!`);return;
+    persistDay(k);closeSheet();ui.act=null;render();toast(`${actName(item)} registrada! +${actXP(item)} XP`);return;
   }
   if(a==='actDel'){
     if(!b.classList.contains('armed')){b.classList.add('armed');b.textContent='Toque de novo pra apagar';return}
@@ -1844,7 +1890,7 @@ function inPause(k){
   return (S.pauses||[]).some(p=>k>=p.from&&k<=p.to);
 }
 const isActiveDay=k=>{const d=S.days[k];return !!d&&!!(d.checked||(d.logs||[]).length||(d.acts||[]).length||(d.done||[]).length)};
-// XP calculado do histórico: +10 por série na área do exercício, +20 por cardio/atividade,
+// XP calculado do histórico: +10 por série na área do exercício, +20 por cardio da academia, atividades por tempo × intensidade,
 // +25 por recorde, +50 por treino completo, bônus de retorno e de boas-vindas, perda leve por inatividade.
 function computeXP(){
   const q=S.quiz,L0=q?q.startLv:1,qd=q?q.date:null;
@@ -1863,7 +1909,7 @@ function computeXP(){
       const x=kindOf(e)==='tempo'?20:10*planSetsFor(ex);areas[e.group]=(areas[e.group]||0)+x;g+=x;
     }
     const w=workoutFor(k);if(w&&w.items.length&&w.items.every(it=>isDone(k,it.ex)))g+=50;
-    for(const a of d.acts||[]){const gr=actInfo(a.type).g;areas[gr]=(areas[gr]||0)+20;g+=20}
+    for(const a of d.acts||[]){const gr=actInfo(a.type).g,x=actXP(a);areas[gr]=(areas[gr]||0)+x;g+=x}
     gain[k]=g;
   }
   let level=L0,into=0,total=0,idle=0,lossWin=0,lost=0,todayGain=0;const gains={};
@@ -2061,7 +2107,7 @@ function viewXP(){
   return head+seg+`<section class="card level" style="gap:6px"><div class="eyebrow">XP total</div><div class="lv num">${X.total.toLocaleString('pt-BR')}<small>XP · Nv ${X.level} ${X.tier}</small></div></section>`
     +xpBody(X.areas,true)
     +`<section class="card" style="padding:18px"><h3 style="color:var(--fg);font-size:1rem;letter-spacing:0;text-transform:none;font-weight:700;margin-bottom:12px">Como você ganha XP</h3>
-      <div class="rules"><div><b class="num">+10</b><span>por série feita, na área do exercício</span></div><div><b class="num">+50</b><span>por treino completo</span></div><div><b class="num">+25</b><span>por recorde de carga</span></div><div><b class="num">+20</b><span>por cardio ou atividade fora da academia</span></div></div>
+      <div class="rules"><div><b class="num">+10</b><span>por série feita, na área do exercício</span></div><div><b class="num">+50</b><span>por treino completo</span></div><div><b class="num">+25</b><span>por recorde de carga</span></div><div><b class="num">+20</b><span>por cardio feito na academia</span></div><div><b class="num">até 300</b><span>por atividade fora da academia: tempo × intensidade (e ritmo, na corrida, bike, caminhada e natação)</span></div></div>
       <h3 style="color:var(--fg);font-size:1rem;letter-spacing:0;text-transform:none;font-weight:700;margin:16px 0 10px">Se você parar</h3>
       <div class="rules"><div><b>7 dias</b><span>de carência, sem perder nada</span></div><div><b class="num">−5/dia</b><span>depois disso, no máx. 35 por semana</span></div><div><b>Nunca</b><span>cai de nível nem de faixa</span></div><div><b class="num">+50</b><span>de bônus no treino de retorno</span></div></div></section>`
     +acct();
@@ -2802,8 +2848,8 @@ document.addEventListener('click',ev=>{
   if(a==='step'){
     const id=b.dataset.t,cur=readNum(id),n=+b.dataset.n;
     const step=b.dataset.s==='w'?(n>0?incFor(cur):incFor(cur-0.01)):+b.dataset.s;
-    const min=id==='w'?0:id==='itRest'?0.5:1;
-    document.getElementById(id).value=fmt(Math.max(min,cur+step*n));
+    const min=id==='w'||id==='actKm'||id==='actSec'?0:id==='itRest'?0.5:1;
+    document.getElementById(id).value=fmt(Math.min(id==='actSec'?59:Infinity,Math.max(min,Math.round((cur+step*n)*100)/100)));
     if(id==='dur')setShareDur();
     return;
   }
