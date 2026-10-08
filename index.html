@@ -1918,7 +1918,7 @@ function sheetAct(){
     ${isNew?'':`<button class="ghost" data-act="actShare" data-id="${a.id}">Compartilhar no Stories</button><button class="ghost danger" data-act="actDel" data-id="${a.id}">Apagar atividade</button>`}`);
 }
 function actPreview(a){const x=actXP(a),sp=actPace(a);
-  if(sp&&a.type==='corrida'){const p=60/sp,mm=Math.floor(p),ss=Math.round((p-mm)*60);return `Vale <b>+${x} XP</b> · ritmo ${mm}:${String(ss===60?59:ss).padStart(2,'0')} min/km`}
+  if(sp&&(a.type==='corrida'||a.type==='caminhada')){const ps=Math.round(3600/sp);return `Vale <b>+${x} XP</b> · pace ${Math.floor(ps/60)}:${String(ps%60).padStart(2,'0')} /km`}
   if(sp)return `Vale <b>+${x} XP</b> · ${fmt(Math.round(sp*10)/10)} km/h`;
   return `Vale <b>+${x} XP</b>${x>=ACT_XP_CAP?' (máximo por atividade)':''}`}
 function updActXP(){const el=document.getElementById('actXP');if(!el||!ui.act)return;readAct();el.innerHTML=actPreview(ui.act)}
@@ -1934,8 +1934,14 @@ function readAct(){
 function actData(k,id){
   const a=((S.days[k]||{}).acts||[]).find(x=>x.id===id);if(!a)return sessionData(k);
   const ws=weekStart(k),week=[0,1,2,3,4,5,6].map(i=>!!S.days[addDays(ws,i)]?.checked);
-  const stats=[['TEMPO',a.min?String(a.min):'—',a.min?'min':'']];
+  // tempo com segundos vira 53:05; minutos redondos ficam "53 min"
+  const t=Math.round((a.min||0)*60),mm=Math.floor(t/60),ss=t%60;
+  const stats=[['TEMPO',a.min?(ss?`${mm}:${String(ss).padStart(2,'0')}`:String(mm)):'—',a.min&&!ss?'min':'']];
   if(a.km)stats.push(['DISTÂNCIA',fmt(a.km),'km']);
+  const sp=actPace(a);
+  if(sp&&(a.type==='corrida'||a.type==='caminhada')){const ps=Math.round(3600/sp),pm=Math.floor(ps/60);stats.push(['PACE',`${pm}:${String(ps%60).padStart(2,'0')}`,'/km'])}
+  else if(sp)stats.push(['VELOCIDADE',fmt(Math.round(sp*10)/10),'km/h']);
+  const xp=actXP(a);if(xp)stats.push(['XP',`+${xp}`,'',1]);
   return {k,title:actName(a),groups:[],rows:[],volume:0,dur:a.min,week,weekCount:week.filter(Boolean).length,stats};
 }
 document.addEventListener('click',ev=>{
