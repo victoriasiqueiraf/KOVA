@@ -685,6 +685,17 @@ const CATALOG=[
   ['agachamento-pc','Agachamento sem peso','Quadríceps','reps'],['pistol','Agachamento pistol (assistido)','Quadríceps','reps'],['nordico','Flexão nórdica','Posterior','reps'],
   ['ponte-unilateral','Ponte de glúteo unilateral','Glúteos','reps'],['panturrilha-degrau','Panturrilha unilateral no degrau','Panturrilha','reps'],
   ['hollow','Hollow hold','Abdômen','iso'],['l-sit','L-sit','Abdômen','iso'],['superman','Superman','Costas','iso'],['parada-mao','Parada de mão na parede','Ombros','iso'],
+  // Em casa (sem equipamento) + variações de agachamento e abdominais
+  ['nado-chao','Nado no chão (deitado de barriga)','Costas','reps'],['rosca-perna','Rosca isométrica puxando a perna','Bíceps','iso'],['stiff-unilateral-pc','Stiff unilateral sem peso','Posterior','reps'],
+  ['flexao-inclinada','Flexão inclinada (banco ou parede)','Peito','reps'],['ponte-cadeira','Ponte com os pés elevados (banco ou degrau)','Posterior','reps'],
+  ['agachamento-parede','Agachamento na parede','Quadríceps','iso'],['sumo-pc','Agachamento sumô sem peso','Quadríceps','reps'],
+  ['agachamento-pausa','Agachamento com pausa embaixo','Quadríceps','reps'],['cossaco','Agachamento cossaco','Quadríceps','reps'],
+  ['agachamento-pulso','Agachamento pulsado','Quadríceps','reps'],['afundo-reverso','Afundo reverso','Quadríceps','reps'],
+  ['afundo-lateral','Afundo lateral','Glúteos','reps'],['subida-cadeira','Subida no banco ou degrau (step-up)','Glúteos','reps'],
+  ['elevacao-pernas-chao','Elevação de pernas deitada','Abdômen','reps'],['abd-remador','Abdominal remador','Abdômen','reps'],
+  ['canivete','Abdominal canivete','Abdômen','reps'],['abd-reverso','Abdominal reverso','Abdômen','reps'],['tesoura','Abdominal tesoura','Abdômen','reps'],
+  ['toque-calcanhar','Abdominal toque no calcanhar','Abdômen','reps'],['dead-bug','Dead bug','Abdômen','reps'],['prancha-toque','Prancha com toque no ombro','Abdômen','reps'],
+  ['bird-dog','Bird dog (perdigueiro)','Abdômen','reps'],
   // Máquinas e polias (adicionadas em out/2026)
   ['supino-maquina','Supino máquina','Peito'],['supino-inclinado-maquina','Supino inclinado máquina','Peito'],['supino-smith','Supino no Smith','Peito'],['crossover-baixo','Crossover polia baixa','Peito'],['remada-maquina','Remada máquina (articulada)','Costas'],['puxada-triangulo','Puxada com triângulo','Costas'],['puxada-supinada','Puxada supinada','Costas'],['remada-cavalinho','Remada cavalinho','Costas'],['graviton','Barra fixa assistida (graviton)','Costas'],['lombar','Extensão lombar no banco','Costas'],['elevacao-lateral-maquina','Elevação lateral máquina','Ombros'],['elevacao-lateral-polia','Elevação lateral na polia','Ombros'],['desenvolvimento-smith','Desenvolvimento no Smith','Ombros'],['face-pull','Face pull na polia','Ombros'],['crucifixo-inverso-maquina','Crucifixo inverso no peck deck','Ombros'],['rosca-maquina','Rosca bíceps máquina','Bíceps'],['rosca-polia','Rosca na polia','Bíceps'],['rosca-w','Rosca com barra W','Bíceps'],['triceps-maquina','Tríceps máquina','Tríceps'],['triceps-unilateral-polia','Tríceps unilateral na polia','Tríceps'],['triceps-frances-polia','Tríceps francês na polia','Tríceps'],['leg-press-horizontal','Leg press horizontal','Quadríceps'],['pendulo','Agachamento pêndulo','Quadríceps'],['afundo-smith','Afundo no Smith','Quadríceps'],['flexora-em-pe','Flexora em pé','Posterior'],['stiff-smith','Stiff no Smith','Posterior'],['gluteo-maquina','Glúteo na máquina (coice)','Glúteos'],['elevacao-pelvica-maquina','Elevação pélvica máquina','Glúteos'],['adutora','Cadeira adutora','Glúteos'],['abdutora-em-pe','Abdução de quadril na polia','Glúteos'],['panturrilha-leg','Panturrilha no leg press','Panturrilha'],['panturrilha-smith','Panturrilha no Smith','Panturrilha'],['abdominal-polia','Abdominal na polia (corda)','Abdômen'],['rotacao-tronco','Rotação de tronco na máquina','Abdômen'],['escada','Escada (simulador)','Cardio','tempo'],['remo','Remo ergométrico','Cardio','tempo'],['esteira-corrida','Corrida na esteira','Cardio','tempo'],
   ['along-inferior','Alongamento de pernas e quadril','Alongamento','tempo'],['along-superior','Alongamento de costas, peito e ombros','Alongamento','tempo'],['mobilidade','Mobilidade de quadril e coluna','Alongamento','tempo']
@@ -787,7 +798,7 @@ Object.assign(PICS,{
   'pular-corda':{front:1,eq:'M22 33C6 72 58 72 42 33',j:'h:32,10 s:32,17 p:32,34 e:26,26 w:22,33 e2:38,26 w2:42,33 k:30,44 f:30,52 k2:34,44 f2:34,52'}
 });
 PICS['lombar']={eq:'M28 40l10-6M36 37v19M46 52h10M4 57h56',j:'h:13,40 s:19,40 p:35,36 k:45,46 f:53,53 e:20,32 w:24,27'};
-const PIC_ALIAS={'desenvolvimento-halteres':'desenvolvimento','mergulho-paralela':'mergulho-banco','australiana':'remada-curvada','flexao-diamante':'flexao','flexao-pike':'flexao','y-raise':'crucifixo-inverso','chin-up':'barra-fixa','agachamento-pc':'agachamento-salto','pistol':'bulgaro','nordico':'mesa-flexora','ponte-unilateral':'ponte-gluteo','panturrilha-degrau':'panturrilha-unilateral','hollow':'abdominal-infra','l-sit':'elevacao-pernas','superman':'prancha','parada-mao':'along-superior','supino-maquina':'supino-reto','supino-inclinado-maquina':'supino-inclinado','supino-smith':'supino-reto','crossover-baixo':'crossover','remada-maquina':'remada-baixa','puxada-triangulo':'puxada-frontal','puxada-supinada':'puxada-frontal','remada-cavalinho':'remada-curvada','graviton':'barra-fixa','elevacao-lateral-maquina':'elevacao-lateral','elevacao-lateral-polia':'elevacao-lateral','desenvolvimento-smith':'desenvolvimento','face-pull':'crucifixo-inverso','crucifixo-inverso-maquina':'crucifixo-inverso','rosca-maquina':'rosca-scott','rosca-polia':'rosca-direta','rosca-w':'rosca-direta','triceps-maquina':'mergulho-banco','triceps-unilateral-polia':'triceps-pulley','triceps-frances-polia':'triceps-frances','leg-press-horizontal':'leg-press','pendulo':'hack','afundo-smith':'afundo','flexora-em-pe':'cadeira-flexora','stiff-smith':'stiff','gluteo-maquina':'gluteo-4apoios','elevacao-pelvica-maquina':'elevacao-pelvica','adutora':'abdutora','abdutora-em-pe':'gluteo-cabo','panturrilha-leg':'leg-press','panturrilha-smith':'panturrilha-pe','abdominal-polia':'abdominal-maquina','rotacao-tronco':'abdominal-maquina','escada':'esteira','remo':'remada-baixa','esteira-corrida':'esteira'};
+const PIC_ALIAS={'desenvolvimento-halteres':'desenvolvimento','nado-chao':'prancha','rosca-perna':'rosca-concentrada','stiff-unilateral-pc':'stiff','flexao-inclinada':'flexao','ponte-cadeira':'ponte-gluteo','agachamento-parede':'agachamento-salto','sumo-pc':'sumo','agachamento-pausa':'agachamento-salto','cossaco':'afundo','agachamento-pulso':'agachamento-salto','afundo-reverso':'afundo','afundo-lateral':'afundo','subida-cadeira':'bulgaro','elevacao-pernas-chao':'abdominal-infra','abd-remador':'abdominal-supra','canivete':'abdominal-infra','abd-reverso':'abdominal-infra','tesoura':'abdominal-bicicleta','toque-calcanhar':'abdominal-supra','dead-bug':'abdominal-bicicleta','prancha-toque':'prancha','bird-dog':'gluteo-4apoios','mergulho-paralela':'mergulho-banco','australiana':'remada-curvada','flexao-diamante':'flexao','flexao-pike':'flexao','y-raise':'crucifixo-inverso','chin-up':'barra-fixa','agachamento-pc':'agachamento-salto','pistol':'bulgaro','nordico':'mesa-flexora','ponte-unilateral':'ponte-gluteo','panturrilha-degrau':'panturrilha-unilateral','hollow':'abdominal-infra','l-sit':'elevacao-pernas','superman':'prancha','parada-mao':'along-superior','supino-maquina':'supino-reto','supino-inclinado-maquina':'supino-inclinado','supino-smith':'supino-reto','crossover-baixo':'crossover','remada-maquina':'remada-baixa','puxada-triangulo':'puxada-frontal','puxada-supinada':'puxada-frontal','remada-cavalinho':'remada-curvada','graviton':'barra-fixa','elevacao-lateral-maquina':'elevacao-lateral','elevacao-lateral-polia':'elevacao-lateral','desenvolvimento-smith':'desenvolvimento','face-pull':'crucifixo-inverso','crucifixo-inverso-maquina':'crucifixo-inverso','rosca-maquina':'rosca-scott','rosca-polia':'rosca-direta','rosca-w':'rosca-direta','triceps-maquina':'mergulho-banco','triceps-unilateral-polia':'triceps-pulley','triceps-frances-polia':'triceps-frances','leg-press-horizontal':'leg-press','pendulo':'hack','afundo-smith':'afundo','flexora-em-pe':'cadeira-flexora','stiff-smith':'stiff','gluteo-maquina':'gluteo-4apoios','elevacao-pelvica-maquina':'elevacao-pelvica','adutora':'abdutora','abdutora-em-pe':'gluteo-cabo','panturrilha-leg':'leg-press','panturrilha-smith':'panturrilha-pe','abdominal-polia':'abdominal-maquina','rotacao-tronco':'abdominal-maquina','escada':'esteira','remo':'remada-baixa','esteira-corrida':'esteira'};
 const picCache={};
 function picSvg(id){
   if(picCache[id])return picCache[id];
@@ -870,7 +881,10 @@ function ensureDefaults(){
   for(const w of S.workouts||[])if(!w.p){w.p=S.activePlan;ch=true}
   for(const pl of S.plans)if(!pl.since){pl.since=Object.keys(S.days||{}).sort().find(k=>{const d=S.days[k];return d&&(d.checked||(d.logs||[]).length)})||today();ch=true}
   if((S.v||3)<8){for(const d of Object.values(CAT)){if(!S.exercises.some(e=>e.id===d.id||norm(e.name)===norm(d.name))){S.exercises.push({...d});ch=true}}}
-  S.v=Math.max(8,S.v||8);return ch;
+  if((S.v||3)<9){for(const d of Object.values(CAT)){if(!S.exercises.some(e=>e.id===d.id||norm(e.name)===norm(d.name))){S.exercises.push({...d});ch=true}}}
+  if((S.v||3)<10){for(const id of ['flexao-inclinada','ponte-cadeira','subida-cadeira']){const e=S.exercises.find(x=>x.id===id);if(e&&CAT[id]&&e.name!==CAT[id].name){e.name=CAT[id].name;ch=true}}
+    for(const d of Object.values(CAT)){if(!S.exercises.some(e=>e.id===d.id||norm(e.name)===norm(d.name))){S.exercises.push({...d});ch=true}}}
+  S.v=Math.max(10,S.v||10);return ch;
 }
 let DP={};try{DP=JSON.parse(localStorage.getItem(LS+'-dayphotos')||'{}')||{}}catch(e){}
 let PH={};try{PH=JSON.parse(localStorage.getItem(LS+'-photos')||'{}')||{}}catch(e){}
@@ -902,9 +916,9 @@ function persistProfile(){saveLocal();scheduleMeta();if(backend.col)queueWrite('
 function persistDay(k){
   saveLocal();scheduleStats();if(!backend.col)return;
   const d=S.days[k];
-  if(!d||(!d.checked&&!d.logs.length&&!d.w&&!d.cali&&!d.start&&!(d.done&&d.done.length)&&!(d.acts&&d.acts.length)))return queueWrite('day-'+k,null);
+  if(!d||(!d.checked&&!d.logs.length&&!d.w&&!d.cali&&!d.home&&!d.start&&!(d.done&&d.done.length)&&!(d.acts&&d.acts.length)))return queueWrite('day-'+k,null);
   const body={kind:'day',date:k,checked:!!d.checked,logs:d.logs};if(d.w)body.w=d.w;if(d.done)body.done=d.done;
-  for(const f of ['start','end','dur','manual','cali'])if(d[f]!=null)body[f]=d[f];
+  for(const f of ['start','end','dur','manual','cali','home'])if(d[f]!=null)body[f]=d[f];
   if(d.acts&&d.acts.length)body.acts=d.acts;
   queueWrite('day-'+k,body);
 }
@@ -963,7 +977,7 @@ async function attach(col,skipCache){
   backend.unsubs.push(col.where('kind','==','day').onSnapshot(q=>{
     if(skipCache&&q.metadata.fromCache)return;
     const days={};
-    for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:JSON.parse(JSON.stringify(d.logs||[]))};if(d.w)days[d.date].w=d.w;if(Array.isArray(d.done))days[d.date].done=[...d.done];for(const f of ['start','end','dur','manual','cali'])if(d[f]!=null)days[d.date][f]=d[f];if(Array.isArray(d.acts))days[d.date].acts=JSON.parse(JSON.stringify(d.acts))}
+    for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:JSON.parse(JSON.stringify(d.logs||[]))};if(d.w)days[d.date].w=d.w;if(Array.isArray(d.done))days[d.date].done=[...d.done];for(const f of ['start','end','dur','manual','cali','home'])if(d[f]!=null)days[d.date][f]=d[f];if(Array.isArray(d.acts))days[d.date].acts=JSON.parse(JSON.stringify(d.acts))}
     for(const k of Object.keys(S.days)){const id='day-'+k;if(pending[id]||busy[id])days[k]=S.days[k]}
     S.days=days;saveLocal();render();
   },()=>{}));
@@ -1015,7 +1029,7 @@ function workoutFor(k){
   const o=S.days[k]?.w;
   const id=o?(o==='rest'?null:o):S.schedule[String(parseKey(k).getDay())];
   const w=id?wById(id):null;
-  return w&&S.days[k]?.cali?caliWorkout(w):w;
+  return w&&S.days[k]?.home?homeWorkout(w):w&&S.days[k]?.cali?caliWorkout(w):w;
 }
 // Calistenia no dia: cada exercício vira o equivalente com o peso do corpo (mesmo músculo). Só vale pro dia marcado.
 const CALI={'supino-reto':['flexao','mergulho-paralela'],'supino-inclinado':['mergulho-paralela','flexao'],'supino-maquina':['flexao','mergulho-paralela'],'supino-inclinado-maquina':['mergulho-paralela','flexao'],
@@ -1036,11 +1050,42 @@ const CALI={'supino-reto':['flexao','mergulho-paralela'],'supino-inclinado':['me
   'abdominal-maquina':['hollow','abdominal-supra'],'abdominal-polia':['hollow','abdominal-supra'],'rotacao-tronco':['russian-twist','prancha-lateral'],
   'kb-swing':['agachamento-salto','burpee'],'wall-ball':['burpee','agachamento-salto'],'thruster':['agachamento-salto','burpee'],'farmer-walk':['prancha','hollow']};
 function caliId(id){return resolveEx(id)?.id||(()=>{const e={...CAT[id]};S.exercises.push(e);return e.id})()}
-function caliWorkout(w){
+function caliWorkout(w){return altWorkout(w,CALI,'cali')}
+// Em casa: sem barra, sem paralela, sem máquina. Parte do mapa da calistenia e troca o que precisa de equipamento.
+const HOME_OVR={
+  chest:['flexao','flexao-inclinada'],back:['nado-chao','superman','y-raise'],biceps:['rosca-perna','nado-chao'],triceps:['mergulho-banco','flexao-diamante']
+};
+const HOME=(()=>{const m={};
+  for(const k in CALI){const v=CALI[k];
+    if(v.includes('flexao')||v.includes('mergulho-paralela')&&!v.includes('flexao-diamante'))m[k]=HOME_OVR.chest;
+    else if(v.includes('barra-fixa')||v.includes('australiana')&&!v.includes('chin-up')&&!v.includes('y-raise'))m[k]=HOME_OVR.back;
+    else if(v.includes('chin-up'))m[k]=HOME_OVR.biceps;
+    else if(v.includes('flexao-diamante')||v.includes('mergulho-banco'))m[k]=HOME_OVR.triceps;
+    else m[k]=v.map(x=>x==='australiana'?'nado-chao':x==='nordico'?'stiff-unilateral-pc':x);}
+  Object.assign(m,{
+    'leg-press':['agachamento-pc','sumo-pc'],'leg-press-horizontal':['agachamento-pc','sumo-pc'],'agachamento':['agachamento-pc','agachamento-pausa'],'agachamento-livre':['agachamento-pausa','agachamento-pc'],
+    'hack':['agachamento-pausa','cossaco'],'pendulo':['cossaco','agachamento-pausa'],'extensora':['agachamento-parede','agachamento-pulso'],'goblet':['agachamento-pc','agachamento-pausa'],'sumo':['sumo-pc','cossaco'],
+    'adutora':['cossaco','sumo-pc'],'afundo-smith':['afundo-reverso','afundo'],'abdutora':['afundo-lateral','gluteo-4apoios'],'abdutora-em-pe':['afundo-lateral','gluteo-4apoios'],
+    'stiff':['stiff-unilateral-pc','ponte-cadeira'],'stiff-smith':['stiff-unilateral-pc','ponte-cadeira'],'terra':['stiff-unilateral-pc','ponte-unilateral'],
+    'mesa-flexora':['ponte-cadeira','stiff-unilateral-pc'],'cadeira-flexora':['ponte-cadeira','stiff-unilateral-pc'],'flexora-em-pe':['ponte-cadeira','stiff-unilateral-pc'],'nordico':['ponte-cadeira','stiff-unilateral-pc'],
+    'abdominal-maquina':['abd-remador','canivete'],'abdominal-polia':['canivete','abd-remador'],'abdominal-infra':['abd-reverso','tesoura'],'rotacao-tronco':['toque-calcanhar','russian-twist'],
+    'elevacao-pernas':['elevacao-pernas-chao','abd-reverso'],'prancha-lateral':['prancha-lateral','dead-bug'],
+    'barra-fixa':['nado-chao','superman'],'chin-up':['rosca-perna','nado-chao'],'australiana':['nado-chao','superman'],'mergulho-paralela':['mergulho-banco','flexao-diamante'],
+    'graviton':['nado-chao','superman'],'box-jump':['agachamento-salto','subida-cadeira'],'wall-ball':['burpee','agachamento-salto'],'kb-swing':['agachamento-salto','ponte-unilateral'],
+    'corda-naval':['mountain-climber','polichinelo'],'pular-corda':['polichinelo','mountain-climber'],'farmer-walk':['prancha-toque','prancha'],'thruster':['agachamento-salto','burpee'],'l-sit':['hollow','elevacao-pernas-chao']
+  });
+  return m})();
+const HOME_CARDIO=['esteira','bike','eliptico','escada','remo','esteira-corrida'];
+function homeWorkout(w){return altWorkout(w,HOME,'home')}
+function altWorkout(w,MAP,tag){
   const used=new Set();
   const items=w.items.map(it=>{
-    if(it.mins!=null)return it;
-    const e=exById(it.ex),cid=e&&(CAT[e.id]?e.id:CAT_BY_NAME[norm(e.name)]),opts=(cid&&CALI[cid])||null;
+    if(it.mins!=null){
+      const ce=exById(it.ex),ccid=ce&&(CAT[ce.id]?ce.id:CAT_BY_NAME[norm(ce.name)]);
+      if(tag==='home'&&HOME_CARDIO.includes(ccid)){const ex=caliId('polichinelo');used.add(ex);return {ex,sets:4,rmin:30,rmax:40,rest:0.5}}
+      return it;
+    }
+    const e=exById(it.ex),cid=e&&(CAT[e.id]?e.id:CAT_BY_NAME[norm(e.name)]),opts=(cid&&MAP[cid])||null;
     if(!opts){used.add(it.ex);return it}
     const to=opts.find(x=>CAT[x]&&!used.has(resolveEx(x)?.id||x));
     if(!to)return {merge:caliId(opts[0]),sets:it.sets||3}; // sem opção nova: soma as séries no exercício que já entrou
@@ -1050,7 +1095,7 @@ function caliWorkout(w){
   });
   const out=[];
   for(const it of items){if(it.merge){const t=out.find(x=>x.ex===it.merge);if(t)t.sets=Math.min(5,t.sets+1);continue}out.push(it)}
-  return {...w,id:w.id+'~cali',base:w.id,cali:true,items:out};
+  return {...w,id:w.id+'~'+tag,base:w.id,[tag]:true,items:out};
 }
 const caliSwaps=w=>w.items.some(it=>{if(it.mins!=null)return false;const e=exById(it.ex),cid=e&&(CAT[e.id]?e.id:CAT_BY_NAME[norm(e.name)]);return !!(cid&&CALI[cid])});
 function targetTxt(it){
@@ -1132,8 +1177,10 @@ function sheetDayPhoto(k){
 }
 function caliToggle(k,d,w){
   if(!w||!w.items.length)return '';
-  const base=w.cali?wById(w.base):w;if(!base||!caliSwaps(base))return '';
-  return `<button class="card switch cali" data-act="caliToggle"><span class="sl"><b>Calistenia ${k===today()?'hoje':'neste dia'}</b><span>${w.cali?'Exercícios com o peso do corpo. Desligue pra voltar às máquinas.':'Troca as máquinas por exercícios com o peso do corpo. Só vale pra este dia.'}</span></span><i class="sw ${w.cali?'on':''}"></i></button>`;
+  const base=w.cali||w.home?wById(w.base):w;if(!base||!caliSwaps(base))return '';
+  const day=k===today()?'hoje':'neste dia';
+  return `<button class="card switch cali" data-act="caliToggle"><span class="sl"><b>Calistenia ${day}</b><span>${w.cali?'Exercícios com o peso do corpo, barra e paralela. Desligue pra voltar às máquinas.':'Troca as máquinas por peso do corpo, com barra fixa e paralela. Só vale pra este dia.'}</span></span><i class="sw ${w.cali?'on':''}"></i></button>
+  <button class="card switch cali" data-act="homeToggle"><span class="sl"><b>Treino fora da academia</b><span>${w.home?'Sem equipamento: só o corpo e, às vezes, um banco ou degrau. Desligue pra voltar às máquinas.':'Em casa, no parque ou na praia: troca tudo por exercícios sem equipamento. Só vale pra este dia.'}</span></span><i class="sw ${w.home?'on':''}"></i></button>`;
 }
 function timerBlock(k,d,w){
   const isToday=k===today(),any=d.logs.length||(d.done&&d.done.length);
@@ -2191,7 +2238,7 @@ function warnCard(){
 }
 function todayCard(k,w,done2){
   const wd=parseKey(k).getDay(),isT=k===today(),n=w?w.items.length:0,C=2*Math.PI*38,pct=n?done2/n:0;
-  return `<section class="tcard ${w?'':'rest-day'}"><div class="t"><span class="lbl">${isT?'Treino de hoje':'Treino do dia'} · ${WDN[wd].toLowerCase()}${w&&w.cali?' · calistenia':''}</span><h2>${w?esc(w.t):'Descanso'}</h2>
+  return `<section class="tcard ${w?'':'rest-day'}"><div class="t"><span class="lbl">${isT?'Treino de hoje':'Treino do dia'} · ${WDN[wd].toLowerCase()}${w&&w.cali?' · calistenia':w&&w.home?' · sem academia':''}</span><h2>${w?esc(w.t):'Descanso'}</h2>
     ${w&&n?`<div class="tchips">${wGroups(w).map(g=>`<span>${g}</span>`).join('')}</div>`:`<span style="font-size:.85rem;opacity:.8">${w?'Esse treino ainda não tem exercícios.':'Dia de descanso. Se quiser treinar, troque o treino.'}</span>`}
     <div class="tbtns"><button data-act="swap" data-k="${k}">Trocar treino</button></div></div>
     ${w&&n?`<div class="ring"><svg viewBox="0 0 92 92"><circle cx="46" cy="46" r="38" fill="none" stroke="rgba(0,0,0,.14)" stroke-width="8"/><circle cx="46" cy="46" r="38" fill="none" stroke="var(--accent-ink)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct)}"/></svg><div class="rc"><b class="num">${done2}<span>/${n}</span></b><small>feitos</small></div></div>`:''}</section>`;
@@ -2464,7 +2511,7 @@ async function loadStudent(sid){
   const col=fb.fs.collection('users').doc(sid).collection('data');
   const [prof,q]=await Promise.all([col.doc('profile').get(),col.where('kind','==','day').get()]);
   const pd=prof.exists?prof.data():{},days={};
-  for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:d.logs||[]};for(const f of ['w','done','start','end','dur','acts','cali'])if(d[f]!=null)days[d.date][f]=d[f]}
+  for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:d.logs||[]};for(const f of ['w','done','start','end','dur','acts','cali','home'])if(d[f]!=null)days[d.date][f]=d[f]}
   const st={v:pd.v||8,goal:pd.goal||4,days,exercises:pd.exercises||[],workouts:pd.workouts||[],schedule:pd.schedule||{},quiz:pd.quiz||null,pause:pd.pause||null,pauses:pd.pauses||[],plans:pd.plans||[],activePlan:pd.activePlan||null,groups:[],bio:pd.bio||null};
   const keys=Object.keys(days).filter(k=>days[k].checked||(days[k].logs||[]).length||(days[k].acts||[]).length).sort();
   CO.cache[sid]={st,lastDay:keys[keys.length-1]||null,at:Date.now()};
@@ -3126,7 +3173,8 @@ document.addEventListener('click',ev=>{
   if(a==='calToggle'){const k=b.dataset.k,d=dayOf(k);d.checked=!d.checked;persistDay(k);closeSheet();render();return}
   if(a==='nick')return sheetNick();
   if(a==='saveNick'){S.nick=document.getElementById('nickIn').value.trim().slice(0,30);persistProfile();closeSheet();render();toast('Nome salvo');return}
-  if(a==='caliToggle'){const k=ui.date,d=dayOf(k);d.cali=!d.cali;if(!d.cali)delete d.cali;persistDay(k);persistProfile();const y=window.scrollY;render();window.scrollTo(0,y);toast(d.cali?'Treino de hoje na versão calistenia':'De volta às máquinas');return}
+  if(a==='homeToggle'){const k=ui.date,d=dayOf(k);d.home=!d.home;if(d.home)delete d.cali;else delete d.home;persistDay(k);persistProfile();const y=window.scrollY;render();window.scrollTo(0,y);toast(d.home?'Treino de hoje sem academia':'De volta às máquinas');return}
+  if(a==='caliToggle'){const k=ui.date,d=dayOf(k);d.cali=!d.cali;if(d.cali)delete d.home;if(!d.cali)delete d.cali;persistDay(k);persistProfile();const y=window.scrollY;render();window.scrollTo(0,y);toast(d.cali?'Treino de hoje na versão calistenia':'De volta às máquinas');return}
   if(a==='tick'){
     const k=ui.date,ex=b.dataset.id,on=!isDone(k,ex);setDone(k,ex,on);persistDay(k);render();
     if(on&&navigator.vibrate)try{navigator.vibrate(12)}catch(e){}
