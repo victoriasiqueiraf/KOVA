@@ -916,9 +916,9 @@ function persistProfile(){saveLocal();scheduleMeta();if(backend.col)queueWrite('
 function persistDay(k){
   saveLocal();scheduleStats();if(!backend.col)return;
   const d=S.days[k];
-  if(!d||(!d.checked&&!d.logs.length&&!d.w&&!d.cali&&!d.home&&!d.start&&!(d.done&&d.done.length)&&!(d.acts&&d.acts.length)))return queueWrite('day-'+k,null);
+  if(!d||(!d.checked&&!d.logs.length&&!d.w&&!d.cali&&!d.home&&!d.burn&&!d.start&&!(d.done&&d.done.length)&&!(d.acts&&d.acts.length)))return queueWrite('day-'+k,null);
   const body={kind:'day',date:k,checked:!!d.checked,logs:d.logs};if(d.w)body.w=d.w;if(d.done)body.done=d.done;
-  for(const f of ['start','end','dur','manual','cali','home'])if(d[f]!=null)body[f]=d[f];
+  for(const f of ['start','end','dur','manual','cali','home','burn'])if(d[f]!=null)body[f]=d[f];
   if(d.acts&&d.acts.length)body.acts=d.acts;
   queueWrite('day-'+k,body);
 }
@@ -977,7 +977,7 @@ async function attach(col,skipCache){
   backend.unsubs.push(col.where('kind','==','day').onSnapshot(q=>{
     if(skipCache&&q.metadata.fromCache)return;
     const days={};
-    for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:JSON.parse(JSON.stringify(d.logs||[]))};if(d.w)days[d.date].w=d.w;if(Array.isArray(d.done))days[d.date].done=[...d.done];for(const f of ['start','end','dur','manual','cali','home'])if(d[f]!=null)days[d.date][f]=d[f];if(Array.isArray(d.acts))days[d.date].acts=JSON.parse(JSON.stringify(d.acts))}
+    for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:JSON.parse(JSON.stringify(d.logs||[]))};if(d.w)days[d.date].w=d.w;if(Array.isArray(d.done))days[d.date].done=[...d.done];for(const f of ['start','end','dur','manual','cali','home','burn'])if(d[f]!=null)days[d.date][f]=d[f];if(Array.isArray(d.acts))days[d.date].acts=JSON.parse(JSON.stringify(d.acts))}
     for(const k of Object.keys(S.days)){const id='day-'+k;if(pending[id]||busy[id])days[k]=S.days[k]}
     S.days=days;saveLocal();render();
   },()=>{}));
@@ -1025,11 +1025,24 @@ const exById=id=>S.exercises.find(e=>e.id===id);
 const kindOf=e=>(e&&e.kind)||'carga';
 function resolveEx(id){const d=CAT[id];return exById(id)||(d&&S.exercises.find(e=>norm(e.name)===norm(d.name)))||null}
 const wById=id=>S.workouts.find(w=>w.id===id)||null;
-function workoutFor(k){
-  const o=S.days[k]?.w;
+function baseWorkoutFor(k){
+  const d=S.days[k];if(d?.burn)return burnWorkout(k);
+  const o=d?.w;
   const id=o?(o==='rest'?null:o):S.schedule[String(parseKey(k).getDay())];
-  const w=id?wById(id):null;
-  return w&&S.days[k]?.home?homeWorkout(w):w&&S.days[k]?.cali?caliWorkout(w):w;
+  return id?wById(id):null;
+}
+function workoutFor(k){
+  const w=baseWorkoutFor(k),d=S.days[k];
+  return w&&d?.home?homeWorkout(w):w&&d?.cali?caliWorkout(w):w;
+}
+// Fullbody pra secar: circuito de corpo inteiro nas máquinas, descanso curto (30 s) e cardio no fim. Alterna A e B de um dia pro outro.
+const BURN=[
+  [['leg-press',3,12,15],['puxada-frontal',3,12,15],['supino-maquina',3,12,15],['extensora',3,12,15],['remada-maquina',3,12,15],['desenvolvimento',3,12,15],['mesa-flexora',3,12,15],['abdominal-maquina',3,15,20],['escada',10]],
+  [['hack',3,12,15],['remada-baixa',3,12,15],['peck-deck',3,12,15],['cadeira-flexora',3,12,15],['puxada-triangulo',3,12,15],['elevacao-lateral-maquina',3,12,15],['abdutora',3,15,20],['abdominal-polia',3,15,20],['eliptico',10]]
+];
+function burnWorkout(k){
+  const i=Math.floor(parseKey(k).getTime()/864e5)%2;
+  return {id:'burn-'+'AB'[i],t:'Fullbody pra secar',burn:true,items:BURN[i].map(a=>a.length===2?{ex:caliId(a[0]),mins:a[1]}:{ex:caliId(a[0]),sets:a[1],rmin:a[2],rmax:a[3],rest:0.5})};
 }
 // Calistenia no dia: cada exercício vira o equivalente com o peso do corpo (mesmo músculo). Só vale pro dia marcado.
 const CALI={'supino-reto':['flexao','mergulho-paralela'],'supino-inclinado':['mergulho-paralela','flexao'],'supino-maquina':['flexao','mergulho-paralela'],'supino-inclinado-maquina':['mergulho-paralela','flexao'],
@@ -1175,9 +1188,13 @@ function sheetDayPhoto(k){
     <button class="ghost danger" data-act="dpDel" data-k="${k}">Apagar foto</button>
     ${k<=today()?`<button class="link" data-act="calToggle" data-k="${k}">${on?'Desmarcar presença neste dia':'Marcar presença neste dia'}</button>`:''}`);
 }
+function burnToggle(k,d){
+  const on=!!(d&&d.burn);
+  return `<button class="card switch cali" data-act="burnToggle"><span class="sl"><b>Fullbody pra secar</b><span>${on?'Circuito de corpo inteiro com descanso curto e cardio no fim. Desligue pra voltar ao treino do plano.':'Troca o treino do dia por um circuito de corpo inteiro pra gastar mais: descanso de 30 s e cardio no fim.'}</span></span><i class="sw ${on?'on':''}"></i></button>`;
+}
 function caliToggle(k,d,w){
   if(!w||!w.items.length)return '';
-  const base=w.cali||w.home?wById(w.base):w;if(!base||!caliSwaps(base))return '';
+  const base=baseWorkoutFor(k);if(!base||!caliSwaps(base))return '';
   const day=k===today()?'hoje':'neste dia';
   return `<button class="card switch cali" data-act="caliToggle"><span class="sl"><b>Calistenia ${day}</b><span>${w.cali?'Exercícios com o peso do corpo, barra e paralela. Desligue pra voltar às máquinas.':'Troca as máquinas por peso do corpo, com barra fixa e paralela. Só vale pra este dia.'}</span></span><i class="sw ${w.cali?'on':''}"></i></button>
   <button class="card switch cali" data-act="homeToggle"><span class="sl"><b>Treino fora da academia</b><span>${w.home?'Sem equipamento: só o corpo e, às vezes, um banco ou degrau. Desligue pra voltar às máquinas.':'Em casa, no parque ou na praia: troca tudo por exercícios sem equipamento. Só vale pra este dia.'}</span></span><i class="sw ${w.home?'on':''}"></i></button>`;
@@ -2511,7 +2528,7 @@ async function loadStudent(sid){
   const col=fb.fs.collection('users').doc(sid).collection('data');
   const [prof,q]=await Promise.all([col.doc('profile').get(),col.where('kind','==','day').get()]);
   const pd=prof.exists?prof.data():{},days={};
-  for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:d.logs||[]};for(const f of ['w','done','start','end','dur','acts','cali','home'])if(d[f]!=null)days[d.date][f]=d[f]}
+  for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:d.logs||[]};for(const f of ['w','done','start','end','dur','acts','cali','home','burn'])if(d[f]!=null)days[d.date][f]=d[f]}
   const st={v:pd.v||8,goal:pd.goal||4,days,exercises:pd.exercises||[],workouts:pd.workouts||[],schedule:pd.schedule||{},quiz:pd.quiz||null,pause:pd.pause||null,pauses:pd.pauses||[],plans:pd.plans||[],activePlan:pd.activePlan||null,groups:[],bio:pd.bio||null};
   const keys=Object.keys(days).filter(k=>days[k].checked||(days[k].logs||[]).length||(days[k].acts||[]).length).sort();
   CO.cache[sid]={st,lastDay:keys[keys.length-1]||null,at:Date.now()};
@@ -2821,6 +2838,7 @@ function viewHoje(){
   <div class="section">
     ${w&&w.items.length&&d.w?'<p class="hint" style="margin:0">Treino trocado só neste dia.</p>':''}
     ${caliToggle(k,d,w)}
+    ${burnToggle(k,d)}
     ${timerBlock(k,d,w)}
     ${dayPhotoBlock(k)}
     ${!w?''
@@ -3173,6 +3191,7 @@ document.addEventListener('click',ev=>{
   if(a==='calToggle'){const k=b.dataset.k,d=dayOf(k);d.checked=!d.checked;persistDay(k);closeSheet();render();return}
   if(a==='nick')return sheetNick();
   if(a==='saveNick'){S.nick=document.getElementById('nickIn').value.trim().slice(0,30);persistProfile();closeSheet();render();toast('Nome salvo');return}
+  if(a==='burnToggle'){const k=ui.date,d=dayOf(k);d.burn=!d.burn;if(!d.burn)delete d.burn;persistDay(k);persistProfile();ui.group=null;const y=window.scrollY;render();window.scrollTo(0,y);toast(d.burn?'Treino de hoje: fullbody pra secar':'De volta ao treino do plano');return}
   if(a==='homeToggle'){const k=ui.date,d=dayOf(k);d.home=!d.home;if(d.home)delete d.cali;else delete d.home;persistDay(k);persistProfile();const y=window.scrollY;render();window.scrollTo(0,y);toast(d.home?'Treino de hoje sem academia':'De volta às máquinas');return}
   if(a==='caliToggle'){const k=ui.date,d=dayOf(k);d.cali=!d.cali;if(d.cali)delete d.home;if(!d.cali)delete d.cali;persistDay(k);persistProfile();const y=window.scrollY;render();window.scrollTo(0,y);toast(d.cali?'Treino de hoje na versão calistenia':'De volta às máquinas');return}
   if(a==='tick'){
