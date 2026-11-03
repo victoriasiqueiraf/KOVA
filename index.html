@@ -629,6 +629,16 @@ body.dragging .wkline:has(.main.holder) .wkrow{background:var(--accent-soft);bor
 .coachpill{position:absolute;left:0;display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:999px;background:var(--surface);font-weight:700;font-size:.84rem;color:var(--fg)}
 .coachpill svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .coachpill.on{background:var(--accent);color:var(--accent-ink)}
+.stretch .sthead{display:flex;flex-direction:column;gap:6px}
+.stretch .sthead h3{margin:0}
+.sttag{align-self:flex-start;font-size:.68rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:color-mix(in srgb,var(--g-along) 22%,var(--surface));color:var(--g-along)}
+.stretch .list{box-shadow:inset 4px 0 0 var(--g-along)}
+.stretch .list{overflow:hidden}
+.strow{display:flex;align-items:center;gap:12px;padding:14px 16px 14px 20px;border-top:1px solid var(--line)}
+.strow:first-child{border-top:0}
+.strow .main{flex:1;min-width:0}
+.strow .sub{font-size:.8rem;color:var(--muted);margin-top:2px}
+.stg{flex:none;font-size:.68rem;font-weight:700;color:var(--muted);padding-top:3px}
 </style>
 
 <main id="app"></main>
@@ -798,6 +808,21 @@ Object.assign(PICS,{
   'pular-corda':{front:1,eq:'M22 33C6 72 58 72 42 33',j:'h:32,10 s:32,17 p:32,34 e:26,26 w:22,33 e2:38,26 w2:42,33 k:30,44 f:30,52 k2:34,44 f2:34,52'}
 });
 PICS['lombar']={eq:'M28 40l10-6M36 37v19M46 52h10M4 57h56',j:'h:13,40 s:19,40 p:35,36 k:45,46 f:53,53 e:20,32 w:24,27'};
+// Desenhos dos alongamentos, no mesmo estilo dos aparelhos
+Object.assign(PICS,{
+  'st-peito':{eq:'M52 4v52M4 57h56',j:'h:26,10 s:27,17 p:28,34 k:28,46 f:28,57 k2:31,46 f2:33,57 e:38,17 w:50,17 e2:22,24 w2:20,31'},
+  'st-crianca':{eq:'M4 57h56',j:'h:20,49 s:26,47 p:42,45 k:46,56 f:56,56 e:16,53 w:8,55'},
+  'st-dorsal':{front:1,eq:'M4 57h56',j:'h:27,13 s:30,20 p:33,36 k:30,46 f:29,57 k2:36,46 f2:37,57 e:38,9 w:27,4 e2:25,27 w2:24,35'},
+  'st-ombro':{front:1,eq:'M4 57h56',j:'h:32,10 s:32,17 p:32,34 k:29,45 f:28,57 k2:35,45 f2:36,57 e:25,20 w:16,21 e2:31,25 w2:23,22'},
+  'st-biceps':{eq:'M10 4v52M4 57h56',j:'h:34,10 s:33,17 p:32,34 k:32,46 f:32,57 e:24,22 w:12,26'},
+  'st-triceps':{eq:'M4 57h56',j:'h:26,13 s:30,20 p:31,37 k:31,47 f:31,57 e:34,6 w:38,17 e2:24,16 w2:32,7'},
+  'st-quad':{eq:'M4 57h56',j:'h:30,9 s:30,16 p:30,33 k:30,45 f:30,57 k2:32,46 f2:23,36 e:27,25 w:24,35'},
+  'st-post':{eq:'M4 57h56',j:'h:36,32 s:30,37 p:16,54 k:34,55 f:52,55 e:40,44 w:50,51'},
+  'st-fig4':{eq:'M4 57h56',j:'h:8,52 s:14,53 p:30,53 k:38,38 f:48,44 k2:44,46 f2:36,40 e:30,45 w:38,40'},
+  'st-pant':{eq:'M8 4v52M4 57h56',j:'h:20,14 s:22,21 p:32,36 k:28,46 f:26,57 k2:40,46 f2:48,57 e:16,24 w:10,22'},
+  'st-cobra':{eq:'M4 57h56',j:'h:12,29 s:16,36 p:36,52 k:46,55 f:58,56 e:16,46 w:16,56'},
+  'st-flexor':{eq:'M4 57h56',j:'h:30,12 s:30,19 p:30,36 k:42,44 f:42,56 k2:24,56 f2:12,56 e:33,28 w:38,40'}
+});
 const PIC_ALIAS={'desenvolvimento-halteres':'desenvolvimento','nado-chao':'prancha','rosca-perna':'rosca-concentrada','stiff-unilateral-pc':'stiff','flexao-inclinada':'flexao','ponte-cadeira':'ponte-gluteo','agachamento-parede':'agachamento-salto','sumo-pc':'sumo','agachamento-pausa':'agachamento-salto','cossaco':'afundo','agachamento-pulso':'agachamento-salto','afundo-reverso':'afundo','afundo-lateral':'afundo','subida-cadeira':'bulgaro','elevacao-pernas-chao':'abdominal-infra','abd-remador':'abdominal-supra','canivete':'abdominal-infra','abd-reverso':'abdominal-infra','tesoura':'abdominal-bicicleta','toque-calcanhar':'abdominal-supra','dead-bug':'abdominal-bicicleta','prancha-toque':'prancha','bird-dog':'gluteo-4apoios','mergulho-paralela':'mergulho-banco','australiana':'remada-curvada','flexao-diamante':'flexao','flexao-pike':'flexao','y-raise':'crucifixo-inverso','chin-up':'barra-fixa','agachamento-pc':'agachamento-salto','pistol':'bulgaro','nordico':'mesa-flexora','ponte-unilateral':'ponte-gluteo','panturrilha-degrau':'panturrilha-unilateral','hollow':'abdominal-infra','l-sit':'elevacao-pernas','superman':'prancha','parada-mao':'along-superior','supino-maquina':'supino-reto','supino-inclinado-maquina':'supino-inclinado','supino-smith':'supino-reto','crossover-baixo':'crossover','remada-maquina':'remada-baixa','puxada-triangulo':'puxada-frontal','puxada-supinada':'puxada-frontal','remada-cavalinho':'remada-curvada','graviton':'barra-fixa','elevacao-lateral-maquina':'elevacao-lateral','elevacao-lateral-polia':'elevacao-lateral','desenvolvimento-smith':'desenvolvimento','face-pull':'crucifixo-inverso','crucifixo-inverso-maquina':'crucifixo-inverso','rosca-maquina':'rosca-scott','rosca-polia':'rosca-direta','rosca-w':'rosca-direta','triceps-maquina':'mergulho-banco','triceps-unilateral-polia':'triceps-pulley','triceps-frances-polia':'triceps-frances','leg-press-horizontal':'leg-press','pendulo':'hack','afundo-smith':'afundo','flexora-em-pe':'cadeira-flexora','stiff-smith':'stiff','gluteo-maquina':'gluteo-4apoios','elevacao-pelvica-maquina':'elevacao-pelvica','adutora':'abdutora','abdutora-em-pe':'gluteo-cabo','panturrilha-leg':'leg-press','panturrilha-smith':'panturrilha-pe','abdominal-polia':'abdominal-maquina','rotacao-tronco':'abdominal-maquina','escada':'esteira','remo':'remada-baixa','esteira-corrida':'esteira'};
 const picCache={};
 function picSvg(id){
@@ -916,9 +941,9 @@ function persistProfile(){saveLocal();scheduleMeta();if(backend.col)queueWrite('
 function persistDay(k){
   saveLocal();scheduleStats();if(!backend.col)return;
   const d=S.days[k];
-  if(!d||(!d.checked&&!d.logs.length&&!d.w&&!d.cali&&!d.home&&!d.burn&&!d.start&&!(d.done&&d.done.length)&&!(d.acts&&d.acts.length)))return queueWrite('day-'+k,null);
+  if(!d||(!d.checked&&!d.logs.length&&!d.w&&!d.cali&&!d.home&&!d.burn&&!d.stretch&&!d.start&&!(d.done&&d.done.length)&&!(d.acts&&d.acts.length)))return queueWrite('day-'+k,null);
   const body={kind:'day',date:k,checked:!!d.checked,logs:d.logs};if(d.w)body.w=d.w;if(d.done)body.done=d.done;
-  for(const f of ['start','end','dur','manual','cali','home','burn'])if(d[f]!=null)body[f]=d[f];
+  for(const f of ['start','end','dur','manual','cali','home','burn','stretch'])if(d[f]!=null)body[f]=d[f];
   if(d.acts&&d.acts.length)body.acts=d.acts;
   queueWrite('day-'+k,body);
 }
@@ -977,7 +1002,7 @@ async function attach(col,skipCache){
   backend.unsubs.push(col.where('kind','==','day').onSnapshot(q=>{
     if(skipCache&&q.metadata.fromCache)return;
     const days={};
-    for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:JSON.parse(JSON.stringify(d.logs||[]))};if(d.w)days[d.date].w=d.w;if(Array.isArray(d.done))days[d.date].done=[...d.done];for(const f of ['start','end','dur','manual','cali','home','burn'])if(d[f]!=null)days[d.date][f]=d[f];if(Array.isArray(d.acts))days[d.date].acts=JSON.parse(JSON.stringify(d.acts))}
+    for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:JSON.parse(JSON.stringify(d.logs||[]))};if(d.w)days[d.date].w=d.w;if(Array.isArray(d.done))days[d.date].done=[...d.done];for(const f of ['start','end','dur','manual','cali','home','burn','stretch'])if(d[f]!=null)days[d.date][f]=d[f];if(Array.isArray(d.acts))days[d.date].acts=JSON.parse(JSON.stringify(d.acts))}
     for(const k of Object.keys(S.days)){const id='day-'+k;if(pending[id]||busy[id])days[k]=S.days[k]}
     S.days=days;saveLocal();render();
   },()=>{}));
@@ -1042,7 +1067,7 @@ const BURN=[
 ];
 function burnWorkout(k){
   const i=Math.floor(parseKey(k).getTime()/864e5)%2;
-  return {id:'burn-'+'AB'[i],t:'Fullbody pra secar',burn:true,items:BURN[i].map(a=>a.length===2?{ex:caliId(a[0]),mins:a[1]}:{ex:caliId(a[0]),sets:a[1],rmin:a[2],rmax:a[3],rest:0.5})};
+  return {id:'burn-'+'AB'[i],t:'Fullbody',burn:true,items:BURN[i].map(a=>a.length===2?{ex:caliId(a[0]),mins:a[1]}:{ex:caliId(a[0]),sets:a[1],rmin:a[2],rmax:a[3],rest:0.5})};
 }
 // Calistenia no dia: cada exercício vira o equivalente com o peso do corpo (mesmo músculo). Só vale pro dia marcado.
 const CALI={'supino-reto':['flexao','mergulho-paralela'],'supino-inclinado':['mergulho-paralela','flexao'],'supino-maquina':['flexao','mergulho-paralela'],'supino-inclinado-maquina':['mergulho-paralela','flexao'],
@@ -1190,7 +1215,7 @@ function sheetDayPhoto(k){
 }
 function burnToggle(k,d){
   const on=!!(d&&d.burn);
-  return `<button class="card switch cali" data-act="burnToggle"><span class="sl"><b>Fullbody pra secar</b><span>${on?'Circuito de corpo inteiro com descanso curto e cardio no fim. Desligue pra voltar ao treino do plano.':'Troca o treino do dia por um circuito de corpo inteiro pra gastar mais: descanso de 30 s e cardio no fim.'}</span></span><i class="sw ${on?'on':''}"></i></button>`;
+  return `<button class="card switch cali" data-act="burnToggle"><span class="sl"><b>Fullbody</b><span>${on?'Circuito de corpo inteiro com descanso curto e cardio no fim. Desligue pra voltar ao treino do plano.':'Troca o treino do dia por um circuito de corpo inteiro pra gastar mais: descanso de 30 s e cardio no fim.'}</span></span><i class="sw ${on?'on':''}"></i></button>`;
 }
 function caliToggle(k,d,w){
   if(!w||!w.items.length)return '';
@@ -1957,6 +1982,37 @@ const actPic=(t,cls)=>`<span class="pic ${cls||''}" style="${gc(actInfo(t).g)}">
 const actName=a=>a.type==='outro'&&a.note?a.note:actInfo(a.type).n;
 const durTxt=m=>{const t=Math.round(m*60),mm=Math.floor(t/60),ss=t%60;return ss?`${mm}:${String(ss).padStart(2,'0')}`:`${mm} min`};
 function actTxt(a){return [a.min?durTxt(a.min):'',a.km?`${fmt(a.km)} km`:''].filter(Boolean).join(' · ')}
+// Alongamento do treino: escolhido pelos músculos trabalhados no dia. Fica separado dos exercícios, como uma sessão própria.
+const STRETCH={
+  'Peito':[['Peito na parede','30 s cada lado','Braço apoiado na parede na altura do ombro, gire o corpo pro lado oposto.','st-peito']],
+  'Costas':[['Postura da criança','40 s','Ajoelhada, sente nos calcanhares e leve os braços estendidos à frente no chão.','st-crianca'],['Dorsal em pé','30 s cada lado','Braço acima da cabeça, incline o tronco pro lado oposto.','st-dorsal']],
+  'Ombros':[['Ombro cruzado','30 s cada lado','Puxe o braço esticado na frente do peito com a outra mão.','st-ombro']],
+  'Bíceps':[['Bíceps na parede','30 s cada lado','Mão espalmada na parede atrás de você, braço esticado, gire o tronco pra frente.','st-biceps']],
+  'Tríceps':[['Tríceps atrás da cabeça','30 s cada lado','Mão nas costas por cima do ombro, empurre o cotovelo com a outra mão.','st-triceps']],
+  'Quadríceps':[['Quadríceps em pé','30 s cada lado','Puxe o pé em direção ao glúteo, joelhos juntos. Apoie numa parede se precisar.','st-quad']],
+  'Posterior':[['Posterior sentada','40 s','Pernas esticadas no chão, incline o tronco e tente alcançar os pés.','st-post']],
+  'Glúteos':[['Figura 4 deitada','30 s cada lado','Tornozelo sobre o joelho oposto, puxe a perna de baixo em direção ao peito.','st-fig4']],
+  'Panturrilha':[['Panturrilha na parede','30 s cada lado','Mãos na parede, uma perna atrás esticada, calcanhar no chão.','st-pant']],
+  'Abdômen':[['Cobra','30 s','Deitada de barriga pra baixo, empurre o chão e estenda os braços levantando o peito.','st-cobra']],
+  'Cardio':[['Flexor do quadril','30 s cada lado','Em posição de afundo com o joelho de trás no chão, empurre o quadril pra frente.','st-flexor']],
+  'Funcional':[['Flexor do quadril','30 s cada lado','Em posição de afundo com o joelho de trás no chão, empurre o quadril pra frente.','st-flexor']]
+};
+function stretchList(w){
+  const gs=wGroups(w).filter(g=>STRETCH[g]),seen=new Set(),out=[];
+  for(const g of gs)for(const st of STRETCH[g])if(!seen.has(st[0])){seen.add(st[0]);out.push({g,n:st[0],t:st[1],d:st[2],pic:st[3]})}
+  return out.slice(0,6);
+}
+function stretchBlock(k,d,w){
+  if(!w||!w.items.length)return '';
+  const gs=wGroups(w);if(gs.length&&gs.every(g=>g==='Alongamento'))return '';
+  const list=stretchList(w);if(!list.length)return '';
+  const mins=Math.max(3,Math.round(list.reduce((s,x)=>s+(/cada lado/.test(x.t)?60:parseInt(x.t)||30),0)/60));
+  const on=!!(d&&d.stretch);
+  return `<div class="section stretch"><div class="sthead"><span class="sttag">Sessão de alongamento</span><h3>Alongamento do treino · ${mins} min</h3></div>
+    <p class="hint" style="margin:0">Faça no fim do treino, com a musculatura ainda quente. Respire fundo e sem forçar até doer.</p>
+    <div class="list">${list.map(x=>`<div class="item strow"><span class="pic" style="${gc('Alongamento')}">${picSvg(x.pic)}</span><div class="main"><div class="name">${esc(x.n)} <span class="muted num" style="font-weight:500">· ${esc(x.t)}</span></div><div class="sub">${esc(x.d)}</div></div><span class="stg">${esc(x.g)}</span></div>`).join('')}</div>
+    <button class="checkin ${on?'on':''}" data-act="stretchDone">${on?'✓ Alongamento feito · +15 XP':'Marcar alongamento como feito'}</button></div>`;
+}
 function actsBlock(k){
   const list=(S.days[k]?.acts)||[];
   return `<div class="section"><h3>Outras atividades</h3>
@@ -2086,6 +2142,7 @@ function computeXP(){
     }
     const w=workoutFor(k);if(w&&w.items.length&&w.items.every(it=>isDone(k,it.ex)))g+=50;
     for(const a of d.acts||[]){const gr=actInfo(a.type).g,x=actXP(a);areas[gr]=(areas[gr]||0)+x;g+=x}
+    if(d.stretch){areas['Alongamento']=(areas['Alongamento']||0)+15;g+=15}
     gain[k]=g;
   }
   let level=L0,into=0,total=0,idle=0,lossWin=0,lost=0,todayGain=0;const gains={};
@@ -2528,7 +2585,7 @@ async function loadStudent(sid){
   const col=fb.fs.collection('users').doc(sid).collection('data');
   const [prof,q]=await Promise.all([col.doc('profile').get(),col.where('kind','==','day').get()]);
   const pd=prof.exists?prof.data():{},days={};
-  for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:d.logs||[]};for(const f of ['w','done','start','end','dur','acts','cali','home','burn'])if(d[f]!=null)days[d.date][f]=d[f]}
+  for(const doc of q.docs){const d=doc.data();days[d.date]={checked:!!d.checked,logs:d.logs||[]};for(const f of ['w','done','start','end','dur','acts','cali','home','burn','stretch'])if(d[f]!=null)days[d.date][f]=d[f]}
   const st={v:pd.v||8,goal:pd.goal||4,days,exercises:pd.exercises||[],workouts:pd.workouts||[],schedule:pd.schedule||{},quiz:pd.quiz||null,pause:pd.pause||null,pauses:pd.pauses||[],plans:pd.plans||[],activePlan:pd.activePlan||null,groups:[],bio:pd.bio||null};
   const keys=Object.keys(days).filter(k=>days[k].checked||(days[k].logs||[]).length||(days[k].acts||[]).length).sort();
   CO.cache[sid]={st,lastDay:keys[keys.length-1]||null,at:Date.now()};
@@ -2844,6 +2901,7 @@ function viewHoje(){
     ${!w?''
       :w.items.length?`<div class="list">${rows}</div><p class="hint" style="margin:0">Toque no círculo para marcar como feito. Toque no nome para anotar carga e repetições. Arraste pra esquerda pra tirar do treino.</p>`:`<div class="empty">Este treino ainda não tem exercícios. Adicione na aba Plano.</div>`}
   </div>
+  ${stretchBlock(k,d,w)}
   ${actsBlock(k)}
   <div class="section">
     <h3>Registrar outro exercício</h3>
@@ -3191,7 +3249,8 @@ document.addEventListener('click',ev=>{
   if(a==='calToggle'){const k=b.dataset.k,d=dayOf(k);d.checked=!d.checked;persistDay(k);closeSheet();render();return}
   if(a==='nick')return sheetNick();
   if(a==='saveNick'){S.nick=document.getElementById('nickIn').value.trim().slice(0,30);persistProfile();closeSheet();render();toast('Nome salvo');return}
-  if(a==='burnToggle'){const k=ui.date,d=dayOf(k);d.burn=!d.burn;if(!d.burn)delete d.burn;persistDay(k);persistProfile();ui.group=null;const y=window.scrollY;render();window.scrollTo(0,y);toast(d.burn?'Treino de hoje: fullbody pra secar':'De volta ao treino do plano');return}
+  if(a==='stretchDone'){const k=ui.date,d=dayOf(k);d.stretch=!d.stretch;if(!d.stretch)delete d.stretch;persistDay(k);const y=window.scrollY;render();window.scrollTo(0,y);if(d.stretch)toast('Alongamento feito! +15 XP');return}
+  if(a==='burnToggle'){const k=ui.date,d=dayOf(k);d.burn=!d.burn;if(!d.burn)delete d.burn;persistDay(k);persistProfile();ui.group=null;const y=window.scrollY;render();window.scrollTo(0,y);toast(d.burn?'Treino de hoje: fullbody':'De volta ao treino do plano');return}
   if(a==='homeToggle'){const k=ui.date,d=dayOf(k);d.home=!d.home;if(d.home)delete d.cali;else delete d.home;persistDay(k);persistProfile();const y=window.scrollY;render();window.scrollTo(0,y);toast(d.home?'Treino de hoje sem academia':'De volta às máquinas');return}
   if(a==='caliToggle'){const k=ui.date,d=dayOf(k);d.cali=!d.cali;if(d.cali)delete d.home;if(!d.cali)delete d.cali;persistDay(k);persistProfile();const y=window.scrollY;render();window.scrollTo(0,y);toast(d.cali?'Treino de hoje na versão calistenia':'De volta às máquinas');return}
   if(a==='tick'){
